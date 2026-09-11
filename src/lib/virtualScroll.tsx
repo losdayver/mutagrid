@@ -11,16 +11,13 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
-
-const borderStyle: CSSProperties = {
-  border: "1px solid black",
-  borderRadius: 3,
-};
+import { borderStyle } from "./temporary";
 
 export interface VirtualScrollProps {
   renderRow: (index: number) => ReactNode;
   rowsNum: number;
   outerDivStyle?: CSSProperties;
+  rowStyle?: CSSProperties;
   rowHeight?: number;
   verticalScrollMargin?: number;
 }
@@ -34,10 +31,11 @@ interface VirtualRowProps {
   index: number;
   rowHeight: number;
   refreshVersion: number;
+  style?: CSSProperties;
 }
 
 const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
-  ({ children, index, rowHeight }) => (
+  ({ children, index, rowHeight, style }) => (
     <div
       key={index}
       style={{
@@ -45,7 +43,7 @@ const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
         position: "absolute",
         width: "100%",
         top: index * rowHeight,
-        ...borderStyle,
+        ...style,
       }}
     >
       {children}
@@ -72,6 +70,7 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
       outerDivStyle,
       rowHeight = 30,
       verticalScrollMargin = 10,
+      rowStyle,
     },
     ref
   ) => {
@@ -95,8 +94,9 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
         const indexEnd = Math.min(
           indexStart +
             Math.floor(containerHeight / rowHeight) +
-            verticalScrollMargin * 2,
-          rowsNum
+            verticalScrollMargin * 2 -
+            1,
+          rowsNum - 1
         );
 
         const tempArr = Array.from(
@@ -147,6 +147,7 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
                 key={index}
                 rowHeight={rowHeight}
                 refreshVersion={refreshVersion}
+                style={rowStyle}
               >
                 {renderRow(index)}
               </VirtualRow>
