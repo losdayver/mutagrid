@@ -7,6 +7,7 @@ import {
   useState,
   memo,
   useCallback,
+  useRef,
 } from "react";
 
 const borderStyle: CSSProperties = {
@@ -17,7 +18,7 @@ const borderStyle: CSSProperties = {
 export interface VirtualScrollProps {
   renderRow: (index: number) => ReactNode;
   rowsNum: number;
-  containerHeight: number;
+  outerDivStyle?: CSSProperties;
   rowHeight?: number;
   verticalScrollMargin?: number;
 }
@@ -51,12 +52,12 @@ const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
 export const VirtualScroll: ComponentType<VirtualScrollProps> = ({
   renderRow,
   rowsNum,
+  outerDivStyle,
   rowHeight = 30,
   verticalScrollMargin = 10,
-  containerHeight: containerHeightProp,
 }) => {
-  const [containerHeight, setContainerHeight] =
-    useState<number>(containerHeightProp);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState<number>(0);
   const [scrollTop, setScrollTop] = useState<number>(0);
   const [indices, setIndices] = useState<number[]>([]);
 
@@ -87,22 +88,40 @@ export const VirtualScroll: ComponentType<VirtualScrollProps> = ({
     generateRows(scrollTop);
   }, [containerHeight, scrollTop]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() =>
+      setContainerHeight(container.clientHeight)
+    );
+    observer.observe(container);
+    setContainerHeight(container.clientHeight);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div
-      style={{
-        height: containerHeight,
-        width: 500,
-        overflow: "auto",
-        ...borderStyle,
-      }}
-      onScroll={(e) => generateRows((e.target as any).scrollTop)}
-    >
-      <div style={{ height: rowsNum * rowHeight, position: "relative" }}>
-        {indices.map((index) => (
-          <VirtualRow index={index} key={index} rowHeight={rowHeight}>
-            {renderRow(index)}
-          </VirtualRow>
-        ))}
+    <div style={outerDivStyle}>
+      <div
+        ref={containerRef}
+        style={{
+          width: 500,
+          overflow: "auto",
+          height: "100%",
+          ...borderStyle,
+        }}
+        onScroll={(e) => {
+          const value = (e.target as any).scrollTop;
+          setScrollTop(value);
+          generateRows(value);
+        }}
+      >
+        <div style={{ height: rowsNum * rowHeight, position: "relative" }}>
+          {indices.map((index) => (
+            <VirtualRow index={index} key={index} rowHeight={rowHeight}>
+              {renderRow(index)}
+            </VirtualRow>
+          ))}
+        </div>
       </div>
     </div>
   );

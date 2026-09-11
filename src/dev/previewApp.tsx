@@ -5,8 +5,7 @@ export const PreviewApp = () => {
   const [checked, setChecked] = useState<Record<number, boolean>>({});
 
   return (
-    <>
-      <h1>Hello World!</h1>
+    <div style={{ height: "100vh" }}>
       <VirtualScroll
         renderRow={(index) => (
           <span>
@@ -24,8 +23,8 @@ export const PreviewApp = () => {
           </span>
         )}
         rowsNum={200}
-        containerHeight={500}
+        outerDivStyle={{ height: "100%" }}
       ></VirtualScroll>
-    </>
+    </div>
   );
 };
