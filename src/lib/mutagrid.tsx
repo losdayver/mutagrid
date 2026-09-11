@@ -37,23 +37,20 @@ interface VirtualRowProps {
 }
 
 const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
-  ({ children, index, rowHeight }) => {
-    console.log(`rendered ${index}`);
-    return (
-      <div
-        key={index}
-        style={{
-          height: rowHeight,
-          position: "absolute",
-          width: "100%",
-          top: index * rowHeight,
-          ...borderStyle,
-        }}
-      >
-        {children}
-      </div>
-    );
-  },
+  ({ children, index, rowHeight }) => (
+    <div
+      key={index}
+      style={{
+        height: rowHeight,
+        position: "absolute",
+        width: "100%",
+        top: index * rowHeight,
+        ...borderStyle,
+      }}
+    >
+      {children}
+    </div>
+  ),
   (
     { index, refreshVersion, rowHeight },
     {
