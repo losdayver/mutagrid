@@ -1,71 +1,91 @@
 import {
   ComponentType,
   CSSProperties,
+  PropsWithChildren,
   ReactNode,
   useEffect,
   useState,
+  memo,
+  useCallback,
 } from "react";
-
-export interface VirtualScrollProps {
-  renderRow: (index: number) => ReactNode;
-  rowsNum: number;
-}
 
 const borderStyle: CSSProperties = {
   border: "1px solid black",
   borderRadius: 3,
 };
 
+export interface VirtualScrollProps {
+  renderRow: (index: number) => ReactNode;
+  rowsNum: number;
+  containerHeight: number;
+  rowHeight?: number;
+  verticalScrollMargin?: number;
+}
+
+interface VirtualRowProps {
+  index: number;
+  rowHeight: number;
+}
+
+const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
+  ({ children, index, rowHeight }) => {
+    console.log(`rendered ${index}`);
+    return (
+      <div
+        key={index}
+        style={{
+          height: rowHeight,
+          position: "absolute",
+          width: "100%",
+          top: index * rowHeight,
+          ...borderStyle,
+        }}
+      >
+        {children}
+      </div>
+    );
+  },
+  ({ index }, { index: nextIndex }) => index == nextIndex
+);
+
 export const VirtualScroll: ComponentType<VirtualScrollProps> = ({
   renderRow,
   rowsNum,
+  rowHeight = 30,
+  verticalScrollMargin = 10,
+  containerHeight: containerHeightProp,
 }) => {
+  const [containerHeight, setContainerHeight] =
+    useState<number>(containerHeightProp);
   const [scrollTop, setScrollTop] = useState<number>(0);
-  const [containerHeight, setContainerHeight] = useState<number>(500);
-  const [rows, setRows] = useState<Record<number, ReactNode>>([]);
+  const [indices, setIndices] = useState<number[]>([]);
 
-  const rowHeight = 30;
-  const verticalScrollMargin = 10;
-
-  const generateRows = (scrollTop: number) => {
-    setScrollTop(scrollTop);
-
-    const indexStart = Math.max(
-      Math.floor(scrollTop / rowHeight) - verticalScrollMargin,
-      0
-    );
-    const indexEnd = Math.min(
-      indexStart +
-        Math.floor(containerHeight / rowHeight) +
-        verticalScrollMargin * 2,
-      rowsNum
-    );
-
-    const temp = {};
-
-    for (let i = indexStart; i <= indexEnd; i++) {
-      temp[i] = (
-        <div
-          key={i}
-          style={{
-            height: rowHeight,
-            position: "absolute",
-            width: "100%",
-            top: i * rowHeight,
-            ...borderStyle,
-          }}
-        >
-          {renderRow(i)}
-        </div>
+  const generateRows = useCallback(
+    (scrollTop: number) => {
+      const indexStart = Math.max(
+        Math.floor(scrollTop / rowHeight) - verticalScrollMargin,
+        0
       );
-    }
+      const indexEnd = Math.min(
+        indexStart +
+          Math.floor(containerHeight / rowHeight) +
+          verticalScrollMargin * 2,
+        rowsNum
+      );
 
-    setRows(temp);
-  };
+      const tempArr = Array.from(
+        { length: indexEnd - indexStart + 1 },
+        (_, index) => indexStart + index
+      );
+
+      setIndices(tempArr);
+    },
+    [containerHeight]
+  );
 
   useEffect(() => {
-    generateRows(0);
-  }, []);
+    generateRows(scrollTop);
+  }, [containerHeight, scrollTop]);
 
   return (
     <div
@@ -78,7 +98,11 @@ export const VirtualScroll: ComponentType<VirtualScrollProps> = ({
       onScroll={(e) => generateRows((e.target as any).scrollTop)}
     >
       <div style={{ height: rowsNum * rowHeight, position: "relative" }}>
-        {Object.values(rows)}
+        {indices.map((index) => (
+          <VirtualRow index={index} key={index} rowHeight={rowHeight}>
+            {renderRow(index)}
+          </VirtualRow>
+        ))}
       </div>
     </div>
   );

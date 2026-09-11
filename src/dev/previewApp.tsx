@@ -24,6 +24,7 @@ export const PreviewApp = () => {
           </span>
         )}
         rowsNum={200}
+        containerHeight={500}
       ></VirtualScroll>
     </>
   );
