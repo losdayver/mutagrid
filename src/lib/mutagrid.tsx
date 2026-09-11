@@ -81,12 +81,12 @@ export const VirtualScroll: ComponentType<VirtualScrollProps> = ({
 
       setIndices(tempArr);
     },
-    [containerHeight]
+    [containerHeight, rowHeight, rowsNum, verticalScrollMargin]
   );
 
   useEffect(() => {
     generateRows(scrollTop);
-  }, [containerHeight, scrollTop]);
+  }, [generateRows, scrollTop]);
 
   useEffect(() => {
     const container = containerRef.current;
