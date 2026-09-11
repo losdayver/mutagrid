@@ -16,11 +16,11 @@ export const PreviewApp = () => {
               onChange={(e) => {
                 setChecked((checked) => ({
                   ...checked,
-                  [index]: e.target.checked,
+                  [index]: !!e.target.checked,
                 }));
                 virtualScrollRef.current?.updateVisible();
               }}
-              checked={checked[index]}
+              checked={!!checked[index]}
             />
             Hello world! {index}
           </span>
