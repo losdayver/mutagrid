@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "rootDir": "src/lib",
+    "outDir": "./dist/lib",
+
+    "module": "esnext",
+    "target": "esnext",
+
+    "lib": ["ES2024", "DOM"],
+
+    "declaration": true,
+    "declarationDir": "./dist/types",
+
+    "moduleDetection": "force",
+
+    "strictNullChecks": true,
+    "noImplicitAny": false,
+
+    "jsx": "react-jsx",
+
+    "noEmitOnError": true,
+
+    "noUncheckedSideEffectImports": false
+  },
+  "include": ["src/lib"],
+  "exclude": ["src/dev"]
+}
