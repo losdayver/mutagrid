@@ -86,7 +86,14 @@ export const TreeView = <Data,>({
         if (!flatTree?.[index]) return "";
 
         return (
-          <div style={{ height: "100%", display: "flex" }}>
+          <div
+            style={{ height: "100%", display: "flex", cursor: "pointer"  }}
+            onClick={() => {
+              node.expanded = !node.expanded;
+              setRefreshVersion((version) => version + 1);
+              virtualScrollRef.current?.updateVisible?.();
+            }}
+          >
             <div style={{ height: "100%", display: "flex" }}>
               {Array.from({ length: node.level ?? 0 }, (_, index) => (
                 <div
@@ -101,16 +108,7 @@ export const TreeView = <Data,>({
             </div>
             <div style={{ paddingLeft: leftPadStep / 2 }}>
               {!!(node.children?.length || node.isFolder) ? (
-                <span
-                  style={{ cursor: "pointer" }}
-                  onClick={() => {
-                    node.expanded = !node.expanded;
-                    setRefreshVersion((version) => version + 1);
-                    virtualScrollRef.current?.updateVisible?.();
-                  }}
-                >
-                  {node.expanded ? "📂" : "📁"}
-                </span>
+                <span>{node.expanded ? "📂" : "📁"}</span>
               ) : (
                 "📄"
               )}
