@@ -26,6 +26,7 @@ export interface TreeViewProps<Data> {
   leftPadStep?: number;
   leftItemPad?: number;
   barsColor?: string;
+  renderIcon?: (node: TreeViewNode<Data>) => ReactNode;
 }
 
 const walkForest = <Data,>(
@@ -66,6 +67,12 @@ export const TreeView = <Data,>({
   leftPadStep = 25,
   leftItemPad = -10,
   barsColor = "#0000003a",
+  renderIcon = (node) =>
+    !!(node.children?.length || node.isFolder) ? (
+      <div style={{ paddingLeft: 2 }}>{node.expanded ? "📂" : "📁"}</div>
+    ) : (
+      "⠀"
+    ),
 }: TreeViewProps<Data>) => {
   const sourceForestRef = useRef(forest);
   const forestShallowCopyRef = useRef<TreeViewNode<Data>[]>(
@@ -159,11 +166,7 @@ export const TreeView = <Data,>({
                 marginLeft: leftPadStep / 2,
               }}
             >
-              {!!(node.children?.length || node.isFolder) ? (
-                <span>{node.expanded ? "📂" : "📁"}</span>
-              ) : (
-                "⠀"
-              )}
+              {renderIcon(node)}
             </div>
             <div>{renderRowContent(node)}</div>
             {/* todo make node name and actual contents separate */}
