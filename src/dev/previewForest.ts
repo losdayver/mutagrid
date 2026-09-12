@@ -1,6 +1,9 @@
 import type { TreeViewProps } from "../lib/treeView";
 
-type PreviewForest = TreeViewProps<string>["forest"];
+type PreviewForest = TreeViewProps<{
+  title: string;
+  dateCreated: Date;
+}>["forest"];
 type PreviewNode = PreviewForest[number];
 type PreviewFolder = PreviewNode & {
   isFolder: true;
@@ -97,7 +100,7 @@ const createRandom = (seed: number): Random => {
   };
 };
 
-const pick = <Value,>(values: readonly Value[], random: Random): Value =>
+const pick = <Value>(values: readonly Value[], random: Random): Value =>
   values[Math.floor(random() * values.length)];
 
 const createFolder = (
@@ -105,7 +108,10 @@ const createFolder = (
   depth: number,
   random: Random
 ): PreviewFolder => ({
-  data: `${pick(adjectives, random)}-${pick(nouns, random)}-${id}`,
+  data: {
+    title: `${pick(adjectives, random)}-${pick(nouns, random)}-${id}`,
+    dateCreated: "" as any,
+  },
   isFolder: true,
   expanded: depth === 0 || random() > Math.min(0.3 + depth * 0.08, 0.8),
   checked: random() < 0.12,
@@ -113,7 +119,10 @@ const createFolder = (
 });
 
 const createFile = (id: number, random: Random): PreviewNode => ({
-  data: `${pick(fileStems, random)}-${id}.${pick(extensions, random)}`,
+  data: {
+    title: `${pick(fileStems, random)}-${id}.${pick(extensions, random)}`,
+    dateCreated: new Date(),
+  },
   checked: random() < 0.12,
 });
 

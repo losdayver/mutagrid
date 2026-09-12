@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { VirtualScroll, VirtualScrollRef } from "../lib/virtualScroll";
 import { TreeView } from "../lib/treeView";
+import { ColumnedTreeView } from "../lib/columnedTreeView";
 import { previewForest } from "./previewForest";
 
 export const PreviewApp = () => {
@@ -33,9 +34,9 @@ export const PreviewApp = () => {
         ></VirtualScroll>
       </div> */}
       <div style={{ height: "100%" }}>
-        <TreeView<string>
+        <ColumnedTreeView<{ dateCreated: Date; title: string }>
           forest={previewForest}
-          renderRowContent={(node) => (
+          renderRowTitle={(node) => (
             <div
               style={{
                 height: "100%",
@@ -45,12 +46,18 @@ export const PreviewApp = () => {
                 color: node.isFolder ? "#545454" : "#000",
               }}
             >
-              {node.data}
+              {node.data.title}
             </div>
           )}
+          renderRowContentToTheRight={(node) => (
+            <div style={{ borderLeft: "1px solid black" }}></div>
+          )}
           outerDivStyle={{ height: 600 }}
-          rowHeight={20}
-        ></TreeView>
+          rowHeight={30}
+          leftPadStep={30}
+          columnWidth={400}
+          columns={{ dateCreated: { title: "Created at", width: 200 } }}
+        ></ColumnedTreeView>
       </div>
     </>
   );

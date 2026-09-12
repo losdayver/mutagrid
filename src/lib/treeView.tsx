@@ -19,12 +19,14 @@ interface TreeViewNode<Data> {
 
 export interface TreeViewProps<Data> {
   forest: TreeViewNode<Data>[];
-  renderRowContent: (node: TreeViewNode<Data>) => ReactNode;
+  renderRowTitle: (node: TreeViewNode<Data>) => ReactNode;
+  renderRowContentToTheRight?: (node: TreeViewNode<Data>) => ReactNode;
   outerDivStyle?: CSSProperties;
   rowStyle?: CSSProperties;
   rowHeight?: number;
   leftPadStep?: number;
   leftItemPad?: number;
+  columnWidth?: number;
   barsColor?: string;
   renderIcon?: (node: TreeViewNode<Data>) => ReactNode;
 }
@@ -60,10 +62,12 @@ const makeFlatTree = <Data,>(forest: TreeViewNode<Data>[]) => {
 
 export const TreeView = <Data,>({
   forest,
-  renderRowContent,
+  renderRowTitle,
+  renderRowContentToTheRight,
   outerDivStyle,
   rowStyle,
   rowHeight,
+  columnWidth,
   leftPadStep = 25,
   leftItemPad = -10,
   barsColor = "#0000003a",
@@ -79,7 +83,7 @@ export const TreeView = <Data,>({
     shallowCopyForest(forest)
   );
   const virtualScrollRef = useRef<VirtualScrollRef>(null);
-  const [refreshVersion, setRefreshVersion] = useState(0);
+  const [_, setRefreshVersion] = useState(0);
 
   const flatTree = makeFlatTree(forestShallowCopyRef.current);
 
@@ -103,73 +107,96 @@ export const TreeView = <Data,>({
         if (!flatTree?.[rowIndex]) return "";
 
         return (
-          <div
-            style={{ height: "100%", display: "flex", cursor: "pointer" }}
-            onClick={() => {
-              node.expanded = !node.expanded;
-              setRefreshVersion((version) => version + 1);
-              virtualScrollRef.current?.updateVisible?.();
-            }}
-          >
-            <div style={{ height: "100%", display: "flex" }}>
-              {Array.from({ length: node.level ?? 0 }, (_, index) => {
-                const hasNextSibling =
-                  flatTree
-                    .slice(rowIndex + 1)
-                    .find((next) => (next.level ?? 0) <= index + 1)?.level ===
-                  index + 1;
-
-                const hasHorizontalBar = node.level! - 1 == index;
-                const isLast = !hasNextSibling && hasHorizontalBar;
-
-                return (
-                  <div
-                    key={index}
-                    style={{
-                      borderLeft:
-                        hasNextSibling || isLast
-                          ? `1px solid ${barsColor}`
-                          : "",
-                      marginLeft: leftPadStep,
-                      height: isLast ? "50%" : "100%",
-                      position: "relative",
-                    }}
-                  >
-                    {hasHorizontalBar && (
-                      <div
-                        style={{
-                          left: 0,
-                          position: "absolute",
-                          height: "100%",
-                          width: leftPadStep + leftItemPad,
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "end",
-                        }}
-                      >
-                        <div
-                          style={{
-                            borderTop: `1px solid ${barsColor}`,
-                            left: leftPadStep,
-                            height: isLast ? 0 : "50%",
-                            width: "100%",
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+          <div style={{ display: "flex", height: "100%" }}>
             <div
               style={{
-                marginLeft: leftPadStep / 2,
+                height: "100%",
+                display: "flex",
+                cursor: "pointer",
+                overflow: "hidden",
+                minWidth: columnWidth ?? "100%",
+              }}
+              onClick={() => {
+                node.expanded = !node.expanded;
+                setRefreshVersion((version) => version + 1);
+                virtualScrollRef.current?.updateVisible?.();
               }}
             >
-              {renderIcon(node)}
+              <div
+                style={{
+                  height: "100%",
+                  display: "flex",
+                }}
+              >
+                {Array.from({ length: node.level ?? 0 }, (_, index) => {
+                  const hasNextSibling =
+                    flatTree
+                      .slice(rowIndex + 1)
+                      .find((next) => (next.level ?? 0) <= index + 1)?.level ===
+                    index + 1;
+
+                  const hasHorizontalBar = node.level! - 1 == index;
+                  const isLast = !hasNextSibling && hasHorizontalBar;
+
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        borderLeft:
+                          hasNextSibling || isLast
+                            ? `1px solid ${barsColor}`
+                            : "",
+                        marginLeft: leftPadStep,
+                        height: isLast ? "50%" : "100%",
+                        position: "relative",
+                      }}
+                    >
+                      {hasHorizontalBar && (
+                        <div
+                          style={{
+                            left: 0,
+                            position: "absolute",
+                            height: "100%",
+                            width: leftPadStep + leftItemPad,
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "end",
+                          }}
+                        >
+                          <div
+                            style={{
+                              borderTop: `1px solid ${barsColor}`,
+                              left: leftPadStep,
+                              height: isLast ? 0 : "50%",
+                              width: "100%",
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div
+                style={{
+                  marginLeft: leftPadStep / 2,
+                }}
+              >
+                {renderIcon(node)}
+              </div>
+              <div
+                style={{
+                  minWidth: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  width: "100%",
+                }}
+              >
+                <div>{renderRowTitle(node)}</div>
+              </div>
             </div>
-            <div>{renderRowContent(node)}</div>
-            {/* todo make node name and actual contents separate */}
+            {renderRowContentToTheRight && renderRowContentToTheRight(node)}
           </div>
         );
       }}

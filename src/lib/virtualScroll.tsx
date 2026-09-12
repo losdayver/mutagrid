@@ -129,7 +129,6 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
         <div
           ref={containerRef}
           style={{
-            width: 500,
             overflow: "auto",
             height: "100%",
             ...borderStyle,
