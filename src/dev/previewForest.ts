@@ -3,6 +3,7 @@ import type { TreeViewProps } from "../lib/treeView";
 type PreviewForest = TreeViewProps<{
   title: string;
   dateCreated: Date;
+  randomText: string;
 }>["forest"];
 type PreviewNode = PreviewForest[number];
 type PreviewFolder = PreviewNode & {
@@ -111,6 +112,7 @@ const createFolder = (
   data: {
     title: `${pick(adjectives, random)}-${pick(nouns, random)}-${id}`,
     dateCreated: "" as any,
+    randomText: `${pick(adjectives, random)} ${pick(nouns, random)}`,
   },
   isFolder: true,
   expanded: depth === 0 || random() > Math.min(0.3 + depth * 0.08, 0.8),
@@ -122,6 +124,7 @@ const createFile = (id: number, random: Random): PreviewNode => ({
   data: {
     title: `${pick(fileStems, random)}-${id}.${pick(extensions, random)}`,
     dateCreated: new Date(),
+    randomText: `${pick(adjectives, random)} ${pick(nouns, random)}`,
   },
   checked: random() < 0.12,
 });

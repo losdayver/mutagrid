@@ -122,7 +122,8 @@ export const TreeView = <Data,>({
                 display: "flex",
                 cursor: "pointer",
                 overflow: "hidden",
-                minWidth: columnWidth ?? "100%",
+                width: columnWidth ?? "100%",
+                flexShrink: 0,
               }}
               onClick={() => {
                 node.expanded = !node.expanded;

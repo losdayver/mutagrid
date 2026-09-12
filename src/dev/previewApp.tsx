@@ -34,7 +34,11 @@ export const PreviewApp = () => {
         ></VirtualScroll>
       </div> */}
       <div style={{ height: "100%" }}>
-        <ColumnedTreeView<{ dateCreated: Date; title: string }>
+        <ColumnedTreeView<{
+          dateCreated: Date;
+          title: string;
+          randomText: string;
+        }>
           forest={previewForest}
           renderRowTitle={(node) => (
             <div
@@ -56,7 +60,10 @@ export const PreviewApp = () => {
           rowHeight={30}
           leftPadStep={30}
           columnWidth={400}
-          columns={{ dateCreated: { title: "Created at", width: 200 } }}
+          columns={{
+            dateCreated: { title: "Created at", width: 200 },
+            randomText: { title: "Random text", width: 200 },
+          }}
         ></ColumnedTreeView>
       </div>
     </>
