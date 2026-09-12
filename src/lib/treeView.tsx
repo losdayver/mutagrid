@@ -21,6 +21,8 @@ export interface TreeViewProps<Data> {
   forest: TreeViewNode<Data>[];
   renderRowContent: (node: TreeViewNode<Data>) => ReactNode;
   outerDivStyle?: CSSProperties;
+  rowStyle?: CSSProperties;
+  rowHeight?: number;
   leftPadStep?: number;
 }
 
@@ -57,6 +59,8 @@ export const TreeView = <Data,>({
   forest,
   renderRowContent,
   outerDivStyle,
+  rowStyle,
+  rowHeight,
   leftPadStep = 25,
 }: TreeViewProps<Data>) => {
   const sourceForestRef = useRef(forest);
@@ -81,13 +85,15 @@ export const TreeView = <Data,>({
       ref={virtualScrollRef}
       outerDivStyle={outerDivStyle}
       rowsNum={flatTree?.length}
+      rowStyle={rowStyle}
+      rowHeight={rowHeight}
       renderRow={(index) => {
         const node = flatTree?.[index];
         if (!flatTree?.[index]) return "";
 
         return (
           <div
-            style={{ height: "100%", display: "flex", cursor: "pointer"  }}
+            style={{ height: "100%", display: "flex", cursor: "pointer" }}
             onClick={() => {
               node.expanded = !node.expanded;
               setRefreshVersion((version) => version + 1);
@@ -99,18 +105,49 @@ export const TreeView = <Data,>({
                 <div
                   key={index}
                   style={{
-                    borderLeft: "1px solid black",
+                    borderLeft: "1px solid #0000003a",
                     marginLeft: leftPadStep,
                     height: "100%",
+                    position: "relative",
                   }}
-                ></div>
+                >
+                  {node.level! - 1 == index && (
+                    <div
+                      style={{
+                        left: 0,
+                        position: "absolute",
+                        height: "100%",
+                        width: leftPadStep / 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "end",
+                      }}
+                    >
+                      <div
+                        style={{
+                          borderTop: "1px solid #0000003a",
+                          left: leftPadStep,
+                          height: "50%",
+                          width: "100%",
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-            <div style={{ paddingLeft: leftPadStep / 2 }}>
+            <div
+              style={{
+                paddingLeft: leftPadStep / 2,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
               {!!(node.children?.length || node.isFolder) ? (
                 <span>{node.expanded ? "📂" : "📁"}</span>
               ) : (
-                "📄"
+                "⠀"
               )}
             </div>
             <div>{renderRowContent(node)}</div>

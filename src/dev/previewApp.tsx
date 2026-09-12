@@ -42,12 +42,15 @@ export const PreviewApp = () => {
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
+                color: node.isFolder ? "#545454" : "#000",
               }}
             >
               {node.data}
             </div>
           )}
+          leftPadStep={40}
           outerDivStyle={{ height: 600 }}
+          rowHeight={35}
         ></TreeView>
       </div>
     </>
