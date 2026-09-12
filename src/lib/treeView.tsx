@@ -101,44 +101,51 @@ export const TreeView = <Data,>({
             }}
           >
             <div style={{ height: "100%", display: "flex" }}>
-              {Array.from({ length: node.level ?? 0 }, (_, index) => (
-                <div
-                  key={index}
-                  style={{
-                    borderLeft: "1px solid #0000003a",
-                    marginLeft: leftPadStep,
-                    height: "100%",
-                    position: "relative",
-                  }}
-                >
-                  {node.level! - 1 == index && (
-                    <div
-                      style={{
-                        left: 0,
-                        position: "absolute",
-                        height: "100%",
-                        width: leftPadStep / 2,
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "end",
-                      }}
-                    >
+              {Array.from({ length: node.level ?? 0 }, (_, index) => {
+                const hasNextSibling =
+                  flatTree
+                    .slice(index + 1)
+                    .find((next) => (next.level ?? 0) <= node.level!)?.level ===
+                  node.level;
+
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      borderLeft: hasNextSibling ? "1px solid #0000003a" : "",
+                      marginLeft: leftPadStep,
+                      height: "100%",
+                      position: "relative",
+                    }}
+                  >
+                    {node.level! - 1 == index && (
                       <div
                         style={{
-                          borderTop: "1px solid #0000003a",
-                          left: leftPadStep,
-                          height: "50%",
-                          width: "100%",
+                          left: 0,
+                          position: "absolute",
+                          height: "100%",
+                          width: leftPadStep * 0.8,
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "end",
                         }}
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
+                      >
+                        <div
+                          style={{
+                            borderTop: "1px solid #0000003a",
+                            left: leftPadStep,
+                            width: "100%",
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <div
               style={{
-                paddingLeft: leftPadStep / 2,
+                paddingLeft: leftPadStep * 0.8,
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
