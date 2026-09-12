@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TreeView, TreeViewProps } from "./treeView";
+import { VirtualScrollRef } from "./virtualScroll";
 
 export interface ColumnedTreeViewProps<
   Data extends Record<string, unknown>,
@@ -23,6 +24,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
     columnWidth,
     ...columnsEntries.map((col) => col[1]!.width),
   ]);
+  const treeViewRef = useRef<VirtualScrollRef>(null);
 
   useEffect(() => {
     setInterval(
@@ -30,6 +32,10 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
       100
     );
   }, []);
+
+  useEffect(() => {
+    treeViewRef.current?.updateVisible();
+  }, [columnWidths]);
 
   return (
     <div>
@@ -56,6 +62,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
       </div>
       <TreeView
         {...props}
+        ref={treeViewRef}
         columnWidth={columnWidths[0]}
         renderRowContentToTheRight={(node) => {
           return columnsEntries.map(([key, val], index) => (

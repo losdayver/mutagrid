@@ -1,8 +1,10 @@
 import {
   ComponentType,
   CSSProperties,
+  Ref,
   ReactNode,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
 } from "react";
@@ -18,6 +20,7 @@ interface TreeViewNode<Data> {
 }
 
 export interface TreeViewProps<Data> {
+  ref?: Ref<VirtualScrollRef>;
   forest: TreeViewNode<Data>[];
   renderRowTitle: (node: TreeViewNode<Data>) => ReactNode;
   renderRowContentToTheRight?: (node: TreeViewNode<Data>) => ReactNode;
@@ -61,6 +64,7 @@ const makeFlatTree = <Data,>(forest: TreeViewNode<Data>[]) => {
 };
 
 export const TreeView = <Data,>({
+  ref,
   forest,
   renderRowTitle,
   renderRowContentToTheRight,
@@ -84,6 +88,10 @@ export const TreeView = <Data,>({
   );
   const virtualScrollRef = useRef<VirtualScrollRef>(null);
   const [_, setRefreshVersion] = useState(0);
+
+  useImperativeHandle(ref, () => ({
+    updateVisible: () => virtualScrollRef.current?.updateVisible(),
+  }));
 
   const flatTree = makeFlatTree(forestShallowCopyRef.current);
 
