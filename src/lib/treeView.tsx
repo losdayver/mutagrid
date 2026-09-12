@@ -24,6 +24,8 @@ export interface TreeViewProps<Data> {
   rowStyle?: CSSProperties;
   rowHeight?: number;
   leftPadStep?: number;
+  leftItemPad?: number;
+  barsColor?: string;
 }
 
 const walkForest = <Data,>(
@@ -62,6 +64,8 @@ export const TreeView = <Data,>({
   rowStyle,
   rowHeight,
   leftPadStep = 25,
+  leftItemPad = -10,
+  barsColor = "#0000003a",
 }: TreeViewProps<Data>) => {
   const sourceForestRef = useRef(forest);
   const forestShallowCopyRef = useRef<TreeViewNode<Data>[]>(
@@ -87,9 +91,9 @@ export const TreeView = <Data,>({
       rowsNum={flatTree?.length}
       rowStyle={rowStyle}
       rowHeight={rowHeight}
-      renderRow={(index) => {
-        const node = flatTree?.[index];
-        if (!flatTree?.[index]) return "";
+      renderRow={(rowIndex) => {
+        const node = flatTree?.[rowIndex];
+        if (!flatTree?.[rowIndex]) return "";
 
         return (
           <div
@@ -104,27 +108,33 @@ export const TreeView = <Data,>({
               {Array.from({ length: node.level ?? 0 }, (_, index) => {
                 const hasNextSibling =
                   flatTree
-                    .slice(index + 1)
-                    .find((next) => (next.level ?? 0) <= node.level!)?.level ===
-                  node.level;
+                    .slice(rowIndex + 1)
+                    .find((next) => (next.level ?? 0) <= index + 1)?.level ===
+                  index + 1;
+
+                const hasHorizontalBar = node.level! - 1 == index;
+                const isLast = !hasNextSibling && hasHorizontalBar;
 
                 return (
                   <div
                     key={index}
                     style={{
-                      borderLeft: hasNextSibling ? "1px solid #0000003a" : "",
+                      borderLeft:
+                        hasNextSibling || isLast
+                          ? `1px solid ${barsColor}`
+                          : "",
                       marginLeft: leftPadStep,
-                      height: "100%",
+                      height: isLast ? "50%" : "100%",
                       position: "relative",
                     }}
                   >
-                    {node.level! - 1 == index && (
+                    {hasHorizontalBar && (
                       <div
                         style={{
                           left: 0,
                           position: "absolute",
                           height: "100%",
-                          width: leftPadStep * 0.8,
+                          width: leftPadStep + leftItemPad,
                           display: "flex",
                           flexDirection: "column",
                           justifyContent: "end",
@@ -132,8 +142,9 @@ export const TreeView = <Data,>({
                       >
                         <div
                           style={{
-                            borderTop: "1px solid #0000003a",
+                            borderTop: `1px solid ${barsColor}`,
                             left: leftPadStep,
+                            height: isLast ? 0 : "50%",
                             width: "100%",
                           }}
                         />
@@ -145,10 +156,7 @@ export const TreeView = <Data,>({
             </div>
             <div
               style={{
-                paddingLeft: leftPadStep * 0.8,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
+                marginLeft: leftPadStep / 2,
               }}
             >
               {!!(node.children?.length || node.isFolder) ? (

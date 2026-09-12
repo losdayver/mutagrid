@@ -48,9 +48,8 @@ export const PreviewApp = () => {
               {node.data}
             </div>
           )}
-          leftPadStep={40}
           outerDivStyle={{ height: 600 }}
-          rowHeight={35}
+          rowHeight={20}
         ></TreeView>
       </div>
     </>
