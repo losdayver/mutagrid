@@ -15,7 +15,13 @@ import {
 export interface VirtualScrollProps {
   renderRow: (index: number) => ReactNode;
   rowsNum: number;
+  /** Styles the outer wrapper that controls the VirtualScroll dimensions. */
   outerDivStyle?: CSSProperties;
+  /** Styles the scrollable viewport that owns both scrollbars. */
+  viewportStyle?: CSSProperties;
+  /** Styles the full-size canvas that contains all virtual row positions. */
+  contentStyle?: CSSProperties;
+  /** Styles every currently mounted virtual row wrapper. */
   rowStyle?: CSSProperties;
   rowHeight?: number;
   verticalScrollMargin?: number;
@@ -36,6 +42,7 @@ interface VirtualRowProps {
 const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
   ({ children, index, rowHeight, style }) => (
     <div
+      className="lsdvr-mutagrid-virtual-scroll-row"
       key={index}
       style={{
         height: rowHeight,
@@ -49,16 +56,18 @@ const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
     </div>
   ),
   (
-    { index, refreshVersion, rowHeight },
+    { index, refreshVersion, rowHeight, style },
     {
       index: nextIndex,
       refreshVersion: nextRefreshVersion,
       rowHeight: nextRowHeight,
+      style: nextStyle,
     }
   ) =>
     index == nextIndex &&
     rowHeight == nextRowHeight &&
-    refreshVersion == nextRefreshVersion
+    refreshVersion == nextRefreshVersion &&
+    style == nextStyle
 );
 
 export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
@@ -67,6 +76,8 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
       renderRow,
       rowsNum,
       outerDivStyle,
+      viewportStyle,
+      contentStyle,
       rowHeight = 30,
       verticalScrollMargin = 10,
       rowStyle,
@@ -124,12 +135,14 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
     }, []);
 
     return (
-      <div style={outerDivStyle}>
+      <div className="lsdvr-mutagrid-virtual-scroll" style={outerDivStyle}>
         <div
+          className="lsdvr-mutagrid-virtual-scroll-viewport"
           ref={containerRef}
           style={{
             overflow: "auto",
             height: "100%",
+            ...viewportStyle,
           }}
           onScroll={(e) => {
             const value = (e.target as any).scrollTop;
@@ -137,7 +150,14 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
             generateRows(value);
           }}
         >
-          <div style={{ height: rowsNum * rowHeight, position: "relative" }}>
+          <div
+            className="lsdvr-mutagrid-virtual-scroll-content"
+            style={{
+              height: rowsNum * rowHeight,
+              position: "relative",
+              ...contentStyle,
+            }}
+          >
             {indices.map((index) => (
               <VirtualRow
                 index={index}

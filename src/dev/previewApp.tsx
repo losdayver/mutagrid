@@ -47,7 +47,7 @@ export const PreviewApp = () => {
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
-                color: node.isFolder ? "#545454" : "#000",
+                color: node.isFolder ? "#d8ddff" : "#f7f8ff",
               }}
             >
               {node.data.title}
@@ -56,8 +56,10 @@ export const PreviewApp = () => {
           renderRowContentToTheRight={(node) => (
             <div style={{ borderLeft: "1px solid black" }}></div>
           )}
-          outerDivStyle={{ height: 600 }}
-          rowHeight={30}
+          virtualScrollProps={{
+            outerDivStyle: { height: 600 },
+            rowHeight: 30,
+          }}
           leftPadStep={30}
           columnWidth={400}
           columns={{

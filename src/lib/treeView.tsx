@@ -1,5 +1,4 @@
 import {
-  ComponentType,
   CSSProperties,
   Ref,
   ReactNode,
@@ -8,7 +7,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { VirtualScroll, VirtualScrollRef } from "./virtualScroll";
+import {
+  VirtualScroll,
+  VirtualScrollProps,
+  VirtualScrollRef,
+} from "./virtualScroll";
 
 interface TreeViewNode<Data> {
   data: Data;
@@ -25,9 +28,26 @@ export interface TreeViewProps<Data> {
   renderIcon?: (node: TreeViewNode<Data>) => ReactNode;
   ref?: Ref<VirtualScrollRef>;
   forest: TreeViewNode<Data>[];
-  outerDivStyle?: CSSProperties;
-  rowStyle?: CSSProperties;
-  rowHeight?: number;
+  /** Configures and styles the VirtualScroll owned by this TreeView. */
+  virtualScrollProps?: Omit<VirtualScrollProps, "renderRow" | "rowsNum">;
+  /** Styles the flex container rendered inside each virtual row. */
+  treeRowStyle?: CSSProperties;
+  /** Styles the tree column containing indentation, icon, and title. */
+  treeColumnStyle?: CSSProperties;
+  /** Styles the container that groups all indentation levels. */
+  indentationContainerStyle?: CSSProperties;
+  /** Styles each indentation level and its vertical connector. */
+  indentationLevelStyle?: CSSProperties;
+  /** Styles the wrapper used to position a horizontal tree connector. */
+  connectorStyle?: CSSProperties;
+  /** Styles the visible horizontal tree connector line. */
+  connectorLineStyle?: CSSProperties;
+  /** Styles the container around the rendered tree icon. */
+  iconContainerStyle?: CSSProperties;
+  /** Styles the clipping container around the rendered row title. */
+  titleContainerStyle?: CSSProperties;
+  /** Styles the immediate wrapper around the rendered row title. */
+  titleContentStyle?: CSSProperties;
   leftPadStep?: number;
   leftItemPad?: number;
   columnWidth?: number;
@@ -68,18 +88,30 @@ export const TreeView = <Data,>({
   forest,
   renderRowTitle,
   renderRowContentToTheRight,
-  outerDivStyle,
-  rowStyle,
-  rowHeight,
+  virtualScrollProps,
+  treeRowStyle,
+  treeColumnStyle,
+  indentationContainerStyle,
+  indentationLevelStyle,
+  connectorStyle,
+  connectorLineStyle,
+  iconContainerStyle,
+  titleContainerStyle,
+  titleContentStyle,
   columnWidth,
   leftPadStep = 25,
   leftItemPad = -10,
   barsColor = "#0000003a",
   renderIcon = (node) =>
     !!(node.children?.length || node.isFolder) ? (
-      <div style={{ paddingLeft: 2 }}>{node.expanded ? "📂" : "📁"}</div>
+      <div
+        className="lsdvr-mutagrid-tree-view-default-icon"
+        style={{ paddingLeft: 2 }}
+      >
+        {node.expanded ? "📂" : "📁"}
+      </div>
     ) : (
-      "⠀"
+      "📄"
     ),
 }: TreeViewProps<Data>) => {
   const sourceForestRef = useRef(forest);
@@ -105,18 +137,20 @@ export const TreeView = <Data,>({
 
   return (
     <VirtualScroll
+      {...virtualScrollProps}
       ref={virtualScrollRef}
-      outerDivStyle={outerDivStyle}
       rowsNum={flatTree?.length}
-      rowStyle={rowStyle}
-      rowHeight={rowHeight}
       renderRow={(rowIndex) => {
         const node = flatTree?.[rowIndex];
         if (!flatTree?.[rowIndex]) return "";
 
         return (
-          <div style={{ display: "flex", height: "100%" }}>
+          <div
+            className="lsdvr-mutagrid-tree-view-row"
+            style={{ display: "flex", height: "100%", ...treeRowStyle }}
+          >
             <div
+              className="lsdvr-mutagrid-tree-view-tree-column"
               style={{
                 height: "100%",
                 display: "flex",
@@ -124,6 +158,7 @@ export const TreeView = <Data,>({
                 overflow: "hidden",
                 width: columnWidth ?? "100%",
                 flexShrink: 0,
+                ...treeColumnStyle,
               }}
               onClick={() => {
                 node.expanded = !node.expanded;
@@ -132,9 +167,11 @@ export const TreeView = <Data,>({
               }}
             >
               <div
+                className="lsdvr-mutagrid-tree-view-indentation"
                 style={{
                   height: "100%",
                   display: "flex",
+                  ...indentationContainerStyle,
                 }}
               >
                 {Array.from({ length: node.level ?? 0 }, (_, index) => {
@@ -149,6 +186,7 @@ export const TreeView = <Data,>({
 
                   return (
                     <div
+                      className="lsdvr-mutagrid-tree-view-indentation-level"
                       key={index}
                       style={{
                         borderLeft:
@@ -158,10 +196,12 @@ export const TreeView = <Data,>({
                         marginLeft: leftPadStep,
                         height: isLast ? "50%" : "100%",
                         position: "relative",
+                        ...indentationLevelStyle,
                       }}
                     >
                       {hasHorizontalBar && (
                         <div
+                          className="lsdvr-mutagrid-tree-view-connector"
                           style={{
                             left: 0,
                             position: "absolute",
@@ -170,14 +210,17 @@ export const TreeView = <Data,>({
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "end",
+                            ...connectorStyle,
                           }}
                         >
                           <div
+                            className="lsdvr-mutagrid-tree-view-connector-line"
                             style={{
                               borderTop: `1px solid ${barsColor}`,
                               left: leftPadStep,
                               height: isLast ? 0 : "50%",
                               width: "100%",
+                              ...connectorLineStyle,
                             }}
                           />
                         </div>
@@ -187,22 +230,31 @@ export const TreeView = <Data,>({
                 })}
               </div>
               <div
+                className="lsdvr-mutagrid-tree-view-icon"
                 style={{
                   marginLeft: leftPadStep / 2,
+                  ...iconContainerStyle,
                 }}
               >
                 {renderIcon(node)}
               </div>
               <div
+                className="lsdvr-mutagrid-tree-view-title"
                 style={{
                   minWidth: 0,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
                   width: "100%",
+                  ...titleContainerStyle,
                 }}
               >
-                <div>{renderRowTitle(node)}</div>
+                <div
+                  className="lsdvr-mutagrid-tree-view-title-content"
+                  style={titleContentStyle}
+                >
+                  {renderRowTitle(node)}
+                </div>
               </div>
             </div>
             {renderRowContentToTheRight && renderRowContentToTheRight(node)}

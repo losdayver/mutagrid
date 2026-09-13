@@ -1,0 +1,360 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #050713;
+  color: #e8ecff;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  overflow: auto;
+  background:
+    radial-gradient(circle at 15% 10%, rgb(85 77 255 / 24%), transparent 34rem),
+    radial-gradient(circle at 88% 15%, rgb(0 214 201 / 16%), transparent 30rem),
+    linear-gradient(145deg, #050713 0%, #090d20 48%, #070a16 100%);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 2.5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 2.5%) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+  content: "";
+  pointer-events: none;
+}
+
+#preview-app-root {
+  display: block;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.lsdvr-mutagrid-columned-tree-view {
+  --mutagrid-bg: rgb(10 14 32 / 88%);
+  --mutagrid-surface: rgb(18 24 49 / 86%);
+  --mutagrid-surface-hover: rgb(44 53 91 / 68%);
+  --mutagrid-border: rgb(144 157 211 / 20%);
+  --mutagrid-border-strong: rgb(142 163 255 / 42%);
+  --mutagrid-text: #edf1ff;
+  --mutagrid-muted: #929dc7;
+  --mutagrid-primary: #8b7cff;
+  --mutagrid-secondary: #17d8c4;
+  --mutagrid-accent: #ff6db1;
+
+  border: 1px solid var(--mutagrid-border);
+  border-radius: 18px;
+  background: var(--mutagrid-bg);
+  box-shadow:
+    0 32px 80px rgb(0 0 0 / 48%),
+    0 0 0 1px rgb(255 255 255 / 3%) inset,
+    0 1px 0 rgb(255 255 255 / 8%) inset;
+  color: var(--mutagrid-text);
+  isolation: isolate;
+  backdrop-filter: blur(22px) saturate(125%);
+}
+
+.lsdvr-mutagrid-columned-tree-view::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--mutagrid-primary),
+    var(--mutagrid-secondary),
+    transparent
+  );
+  content: "";
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.lsdvr-mutagrid-columned-tree-view-header {
+  min-height: 46px;
+  border-radius: 17px 17px 0 0;
+  border-bottom: 1px solid var(--mutagrid-border-strong);
+  background:
+    linear-gradient(180deg, rgb(38 47 87 / 92%), rgb(20 27 56 / 94%)),
+    var(--mutagrid-surface);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 8%) inset,
+    0 12px 30px rgb(0 0 0 / 20%);
+  user-select: none;
+}
+
+.lsdvr-mutagrid-columned-tree-view-header-cell {
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border: 0 !important;
+  color: #cbd3f7;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 12px rgb(139 124 255 / 25%);
+  text-transform: uppercase;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.lsdvr-mutagrid-columned-tree-view-header-cell:hover {
+  background: linear-gradient(180deg, rgb(139 124 255 / 14%), transparent);
+  color: #fff;
+}
+
+.lsdvr-mutagrid-columned-tree-view-first-header-cell {
+  color: #fff;
+  background: linear-gradient(90deg, rgb(139 124 255 / 13%), transparent 75%);
+}
+
+.lsdvr-mutagrid-columned-tree-view-header-cell[data-column-key="dateCreated"] {
+  color: #8fe9df;
+}
+
+.lsdvr-mutagrid-columned-tree-view-header-cell[data-column-key="randomText"] {
+  color: #ffadd2;
+}
+
+.lsdvr-mutagrid-columned-tree-view-resize-handle {
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.lsdvr-mutagrid-columned-tree-view-resize-handle::before {
+  position: absolute;
+  top: 9px;
+  bottom: 9px;
+  left: 50%;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(var(--mutagrid-primary), var(--mutagrid-secondary));
+  box-shadow: 0 0 12px rgb(23 216 196 / 75%);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.lsdvr-mutagrid-columned-tree-view-column-divider:hover
+  > .lsdvr-mutagrid-columned-tree-view-resize-handle,
+.lsdvr-mutagrid-columned-tree-view-resize-handle[data-grabbed="true"] {
+  opacity: 1;
+}
+
+.lsdvr-mutagrid-columned-tree-view-resize-indicator {
+  width: 2px !important;
+  background: linear-gradient(
+    to bottom,
+    var(--mutagrid-primary),
+    var(--mutagrid-secondary)
+  ) !important;
+  box-shadow:
+    0 0 8px var(--mutagrid-secondary),
+    0 0 24px rgb(139 124 255 / 70%);
+}
+
+.lsdvr-mutagrid-columned-tree-view-column-divider {
+  background: linear-gradient(
+    to bottom,
+    rgb(147 163 255 / 42%),
+    rgb(23 216 196 / 18%),
+    rgb(147 163 255 / 10%)
+  ) !important;
+}
+
+.lsdvr-mutagrid-virtual-scroll {
+  border-color: var(--mutagrid-border) !important;
+  background: linear-gradient(180deg, rgb(10 14 32 / 96%), rgb(6 9 22 / 96%));
+}
+
+.lsdvr-mutagrid-virtual-scroll-viewport {
+  overscroll-behavior: contain;
+  scrollbar-color: var(--mutagrid-primary) rgb(5 8 20 / 85%);
+  scrollbar-width: thin;
+}
+
+.lsdvr-mutagrid-virtual-scroll-viewport::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+.lsdvr-mutagrid-virtual-scroll-viewport::-webkit-scrollbar-track {
+  background: rgb(5 8 20 / 92%);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 4%) inset;
+}
+
+.lsdvr-mutagrid-virtual-scroll-viewport::-webkit-scrollbar-thumb {
+  border: 3px solid rgb(5 8 20 / 92%);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--mutagrid-primary), #6256c9);
+}
+
+.lsdvr-mutagrid-virtual-scroll-viewport::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #a99fff, var(--mutagrid-secondary));
+}
+
+.lsdvr-mutagrid-virtual-scroll-viewport::-webkit-scrollbar-corner {
+  background: rgb(5 8 20 / 92%);
+}
+
+.lsdvr-mutagrid-virtual-scroll-content {
+  background:
+    linear-gradient(90deg, rgb(139 124 255 / 3%), transparent 28%),
+    repeating-linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 1.5%) 0,
+      rgb(255 255 255 / 1.5%) 1px,
+      transparent 1px,
+      transparent 30px
+    );
+}
+
+.lsdvr-mutagrid-virtual-scroll-row {
+  color: var(--mutagrid-text);
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.lsdvr-mutagrid-virtual-scroll-row:nth-child(even) {
+  background-color: rgb(255 255 255 / 1.7%);
+}
+
+.lsdvr-mutagrid-virtual-scroll-row:hover {
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgb(139 124 255 / 20%), rgb(23 216 196 / 7%)),
+    var(--mutagrid-surface-hover);
+  box-shadow:
+    3px 0 0 var(--mutagrid-primary) inset,
+    0 8px 24px rgb(0 0 0 / 18%);
+}
+
+.lsdvr-mutagrid-tree-view-row {
+  align-items: stretch;
+  font-size: 14px;
+}
+
+.lsdvr-mutagrid-tree-view-tree-column {
+  align-items: center;
+  color: var(--mutagrid-text);
+}
+
+.lsdvr-mutagrid-tree-view-indentation {
+  flex: 0 0 auto;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.lsdvr-mutagrid-tree-view-indentation-level {
+  border-color: rgb(147 163 205 / 28%) !important;
+  transition: border-color 120ms ease;
+}
+
+.lsdvr-mutagrid-virtual-scroll-row:hover
+  .lsdvr-mutagrid-tree-view-indentation-level {
+  border-color: rgb(139 124 255 / 64%) !important;
+}
+
+.lsdvr-mutagrid-tree-view-connector {
+  opacity: 0.9;
+}
+
+.lsdvr-mutagrid-tree-view-connector-line {
+  border-color: rgb(23 216 196 / 42%) !important;
+  filter: drop-shadow(0 0 3px rgb(23 216 196 / 32%));
+}
+
+.lsdvr-mutagrid-tree-view-icon {
+  display: grid;
+  flex: 0 0 28px;
+  place-items: center;
+  min-width: 28px;
+  height: 24px;
+  margin: 3px 8px 3px 6px !important;
+  border: 1px solid rgb(139 124 255 / 18%);
+  border-radius: 8px;
+  background: linear-gradient(145deg, rgb(139 124 255 / 16%), rgb(23 216 196 / 7%));
+  box-shadow: 0 3px 12px rgb(0 0 0 / 22%);
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.lsdvr-mutagrid-virtual-scroll-row:hover .lsdvr-mutagrid-tree-view-icon {
+  border-color: rgb(23 216 196 / 52%);
+  transform: translateY(-1px) scale(1.03);
+}
+
+.lsdvr-mutagrid-tree-view-default-icon {
+  padding: 0 !important;
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 35%));
+  line-height: 1;
+}
+
+.lsdvr-mutagrid-tree-view-title {
+  display: flex;
+  align-items: center;
+  padding-right: 14px;
+}
+
+.lsdvr-mutagrid-tree-view-title-content {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  font-weight: 520;
+  letter-spacing: 0.012em;
+  text-overflow: ellipsis;
+}
+
+.lsdvr-mutagrid-columned-tree-view-data-cell {
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-left: 1px solid rgb(147 163 205 / 11%);
+  color: var(--mutagrid-muted);
+  font-size: 13px;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.lsdvr-mutagrid-virtual-scroll-row:hover
+  .lsdvr-mutagrid-columned-tree-view-data-cell {
+  border-color: rgb(139 124 255 / 28%);
+  color: #e4e9ff;
+}
+
+.lsdvr-mutagrid-columned-tree-view-data-cell[data-column-key="dateCreated"] {
+  color: #76cfc5;
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lsdvr-mutagrid-columned-tree-view-data-cell[data-column-key="randomText"] {
+  color: #dca5c3;
+}
+
+::selection {
+  background: rgb(139 124 255 / 42%);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lsdvr-mutagrid-columned-tree-view *,
+  .lsdvr-mutagrid-columned-tree-view *::before,
+  .lsdvr-mutagrid-columned-tree-view *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
