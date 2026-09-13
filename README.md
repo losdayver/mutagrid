@@ -111,4 +111,4 @@ Mutagrid is an ESM-only TypeScript library and generates TypeScript declarations
 
 ## License
 
-ISC
+[MIT](./LICENSE)
