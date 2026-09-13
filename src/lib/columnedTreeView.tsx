@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { TreeView, TreeViewProps } from "./treeView";
 import { VirtualScrollRef } from "./virtualScroll";
 
+const FIRST_COLUMN_KEY = "$firstColumn$";
+
 export interface ColumnedTreeViewProps<
   Data extends Record<string, unknown>,
 > extends TreeViewProps<Data> {
@@ -16,57 +18,41 @@ export interface ColumnedTreeViewProps<
 export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   props: ColumnedTreeViewProps<Data>
 ) => {
-  const { columns, columnWidth = 100 } = props;
-
+  const { columns, columnWidth: firstColumnWidth = 100 } = props;
   const columnsEntries = Object.entries(columns);
+  const columnKeys = [
+    FIRST_COLUMN_KEY,
+    ...columnsEntries.map(([key]) => key),
+  ];
 
-  const [columnWidths, setColumnWidths] = useState<number[]>([
-    columnWidth,
-    ...columnsEntries.map((col) => col[1]!.width),
-  ]);
-  const [grabbedColumn, setGrabbedColumn] = useState<{
-    index: number;
-    startX: number;
-    currentX: number;
-    startWidth: number;
-  } | null>(null);
+  const [columnWidths, setColumnWidths] = useState(() =>
+    Object.fromEntries<number>([
+      [FIRST_COLUMN_KEY, firstColumnWidth],
+      ...columnsEntries.map(([key, val]) => [key, val!.width] as const),
+    ])
+  );
+  const [grabbedColumn, setGrabbedColumn] = useState<string | null>(null);
+  const pointerXRef = useRef(0);
   const treeViewRef = useRef<VirtualScrollRef>(null);
 
-  const renderResizeHandle = (columnIndex: number) => (
+  const renderResizeHandle = (columnKey: string) => (
     <div
-      data-grabbed={grabbedColumn?.index === columnIndex}
+      data-grabbed={grabbedColumn === columnKey}
       onPointerDown={(event) => {
-        event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
-        setGrabbedColumn({
-          index: columnIndex,
-          startX: event.clientX,
-          currentX: event.clientX,
-          startWidth: columnWidths[columnIndex],
-        });
+        pointerXRef.current = event.clientX;
+        setGrabbedColumn(columnKey);
       }}
       onPointerMove={(event) => {
-        setGrabbedColumn((column) =>
-          column?.index === columnIndex
-            ? { ...column, currentX: event.clientX }
-            : column
-        );
+        if (grabbedColumn !== columnKey) return;
+        const offset = event.clientX - pointerXRef.current;
+        pointerXRef.current = event.clientX;
+        setColumnWidths((widths) => ({
+          ...widths,
+          [columnKey]: Math.max(0, widths[columnKey] + offset),
+        }));
       }}
-      onPointerUp={(event) => {
-        if (grabbedColumn?.index === columnIndex) {
-          const width = Math.max(
-            0,
-            grabbedColumn.startWidth + event.clientX - grabbedColumn.startX
-          );
-          setColumnWidths((widths) =>
-            widths.map((currentWidth, index) =>
-              index === columnIndex ? width : currentWidth
-            )
-          );
-        }
-        setGrabbedColumn(null);
-      }}
-      onPointerCancel={() => setGrabbedColumn(null)}
+      onPointerUp={() => setGrabbedColumn(null)}
       onLostPointerCapture={() => setGrabbedColumn(null)}
       style={{
         position: "absolute",
@@ -87,22 +73,15 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
 
   return (
     <div style={{ position: "relative" }}>
-      {grabbedColumn && (
+      {grabbedColumn != null && (
         <div
           style={{
             position: "absolute",
             top: 0,
             bottom: 0,
-            left:
-              columnWidths
-                .slice(0, grabbedColumn.index)
-                .reduce((sum, width) => sum + width, 0) +
-              Math.max(
-                0,
-                grabbedColumn.startWidth +
-                  grabbedColumn.currentX -
-                  grabbedColumn.startX
-              ),
+            left: columnKeys
+              .slice(0, columnKeys.indexOf(grabbedColumn) + 1)
+              .reduce((sum, key) => sum + columnWidths[key], 0),
             width: 1,
             background: "blue",
             pointerEvents: "none",
@@ -113,7 +92,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
       <div style={{ display: "flex" }}>
         <div
           style={{
-            width: columnWidths[0],
+            width: columnWidths[FIRST_COLUMN_KEY],
             flexShrink: 0,
             border: "1px solid black",
             position: "relative",
@@ -123,7 +102,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
           }}
         >
           file
-          {columnsEntries.length > 0 && renderResizeHandle(0)}
+          {columnsEntries.length > 0 && renderResizeHandle(FIRST_COLUMN_KEY)}
         </div>
         {columnsEntries.map(([key, val], index) => (
           <div
@@ -140,20 +119,19 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
               width:
                 index == Object.keys(columns).length - 1
                   ? ""
-                  : columnWidths[index + 1],
+                  : columnWidths[key],
               ...(index == Object.keys(columns).length - 1 ? { flex: 1 } : {}),
             }}
           >
             {val?.title}
-            {index < columnsEntries.length - 1 &&
-              renderResizeHandle(index + 1)}
+            {index < columnsEntries.length - 1 && renderResizeHandle(key)}
           </div>
         ))}
       </div>
       <TreeView
         {...props}
         ref={treeViewRef}
-        columnWidth={columnWidths[0]}
+        columnWidth={columnWidths[FIRST_COLUMN_KEY]}
         renderRowContentToTheRight={(node) => {
           return columnsEntries.map(([key, val], index) => (
             <div
@@ -168,7 +146,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
                 width:
                   index === columnsEntries.length - 1
                     ? undefined
-                    : columnWidths[index + 1],
+                    : columnWidths[key],
                 ...(index === columnsEntries.length - 1
                   ? { flex: 1 }
                   : { flexShrink: 0 }),
