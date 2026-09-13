@@ -1,5 +1,6 @@
 import {
   CSSProperties,
+  MouseEvent,
   Ref,
   ReactNode,
   useEffect,
@@ -26,6 +27,11 @@ export interface TreeViewProps<Data> {
   renderRowTitle: (node: TreeViewNode<Data>) => string;
   renderRowContentToTheRight?: (node: TreeViewNode<Data>) => ReactNode;
   renderIcon?: (node: TreeViewNode<Data>) => ReactNode;
+  /** Handles primary and context-menu clicks on a row. */
+  onClick?: (
+    node: TreeViewNode<Data>,
+    event: MouseEvent<HTMLDivElement>
+  ) => void;
   ref?: Ref<VirtualScrollRef>;
   forest: TreeViewNode<Data>[];
   /** Configures and styles the VirtualScroll owned by this TreeView. */
@@ -88,6 +94,7 @@ export const TreeView = <Data,>({
   forest,
   renderRowTitle,
   renderRowContentToTheRight,
+  onClick,
   virtualScrollProps,
   treeRowStyle,
   treeColumnStyle,
@@ -130,6 +137,10 @@ export const TreeView = <Data,>({
       {...virtualScrollProps}
       ref={virtualScrollRef}
       rowsNum={flatTree?.length}
+      onClick={(rowIndex, event) => {
+        virtualScrollProps?.onClick?.(rowIndex, event);
+        onClick?.(flatTree[rowIndex], event);
+      }}
       renderRow={(rowIndex) => {
         const node = flatTree?.[rowIndex];
         if (!flatTree?.[rowIndex]) return "";
@@ -150,7 +161,9 @@ export const TreeView = <Data,>({
                 flexShrink: 0,
                 ...treeColumnStyle,
               }}
-              onClick={() => {
+              onClick={(event) => {
+                if (!node.isFolder) return;
+                event.stopPropagation();
                 node.expanded = !node.expanded;
                 setRefreshVersion((version) => version + 1);
                 virtualScrollRef.current?.updateVisible?.();

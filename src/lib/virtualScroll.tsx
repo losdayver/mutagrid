@@ -1,6 +1,7 @@
 import {
   ComponentType,
   CSSProperties,
+  MouseEvent,
   PropsWithChildren,
   ReactNode,
   useEffect,
@@ -25,6 +26,8 @@ export interface VirtualScrollProps {
   rowStyle?: CSSProperties;
   rowHeight?: number;
   verticalScrollMargin?: number;
+  /** Handles primary and context-menu clicks on a rendered row. */
+  onClick?: (index: number, event: MouseEvent<HTMLDivElement>) => void;
 }
 
 export interface VirtualScrollRef {
@@ -37,18 +40,22 @@ interface VirtualRowProps {
   rowHeight: number;
   refreshVersion: number;
   style?: CSSProperties;
+  onClick?: VirtualScrollProps["onClick"];
 }
 
 const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
-  ({ children, index, rowHeight, style }) => (
+  ({ children, index, rowHeight, style, onClick }) => (
     <div
       className="lsdvr-mutagrid-virtual-scroll-row"
       key={index}
+      onClick={(event) => onClick?.(index, event)}
+      onContextMenu={(event) => onClick?.(index, event)}
       style={{
         height: rowHeight,
         position: "absolute",
         width: "100%",
         top: index * rowHeight,
+        cursor: "pointer",
         ...style,
       }}
     >
@@ -56,18 +63,20 @@ const VirtualRow: ComponentType<PropsWithChildren<VirtualRowProps>> = memo(
     </div>
   ),
   (
-    { index, refreshVersion, rowHeight, style },
+    { index, refreshVersion, rowHeight, style, onClick },
     {
       index: nextIndex,
       refreshVersion: nextRefreshVersion,
       rowHeight: nextRowHeight,
       style: nextStyle,
+      onClick: nextOnClick,
     }
   ) =>
     index == nextIndex &&
     rowHeight == nextRowHeight &&
     refreshVersion == nextRefreshVersion &&
-    style == nextStyle
+    style == nextStyle &&
+    onClick == nextOnClick
 );
 
 export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
@@ -81,6 +90,7 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
       rowHeight = 30,
       verticalScrollMargin = 10,
       rowStyle,
+      onClick,
     },
     ref
   ) => {
@@ -165,6 +175,7 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
                 rowHeight={rowHeight}
                 refreshVersion={refreshVersion}
                 style={rowStyle}
+                onClick={onClick}
               >
                 {renderRow(index)}
               </VirtualRow>

@@ -18,6 +18,7 @@ export interface ColumnedTreeViewProps<
   columns: Partial<{
     [Key in keyof Data]: ColumnedTreeViewColumn;
   }>;
+  firstColumnTitle?: string;
   /** Styles the root wrapper containing the header and TreeView. */
   columnedTreeViewStyle?: CSSProperties;
   /** Styles the row containing all column headers. */
@@ -66,6 +67,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
     resizeHandleStyle,
     resizeIndicatorStyle,
     columnDividerStyle,
+    firstColumnTitle = "File",
   } = props;
   const columnsEntries = Object.entries(columns);
   const columnKeys = [FIRST_COLUMN_KEY, ...columnsEntries.map(([key]) => key)];
@@ -144,7 +146,11 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   return (
     <div
       className="lsdvr-mutagrid-columned-tree-view"
-      style={{ minWidth: tableWidth, ...columnedTreeViewStyle }}
+      style={{
+        position: "relative",
+        minWidth: tableWidth,
+        ...columnedTreeViewStyle,
+      }}
     >
       {grabbedColumn != null && (
         <div
@@ -208,7 +214,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
             ...firstHeaderCellStyle,
           }}
         >
-          file
+          {firstColumnTitle}
         </div>
         {columnsEntries.map(([key, val], index) => (
           <div

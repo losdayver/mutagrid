@@ -19,6 +19,12 @@ export const PreviewApp = () => {
         horizontalBarLength={5}
         forest={previewForest}
         renderRowTitle={(node) => node.data.title}
+        onClick={(node, event) => {
+          if (event.button === 2) event.preventDefault();
+          window.alert(
+            `${event.button === 2 ? "Right" : "Left"} click: ${node.data.title}`
+          );
+        }}
         virtualScrollProps={{ outerDivStyle: { height: 600 } }}
         columns={{
           dateCreated: { title: "Created at", width: 200 },
