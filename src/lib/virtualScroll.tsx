@@ -11,7 +11,6 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import { borderStyle } from "./temporary";
 
 export interface VirtualScrollProps {
   renderRow: (index: number) => ReactNode;
@@ -131,7 +130,6 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
           style={{
             overflow: "auto",
             height: "100%",
-            ...borderStyle,
           }}
           onScroll={(e) => {
             const value = (e.target as any).scrollTop;

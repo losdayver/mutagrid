@@ -18,12 +18,9 @@ export interface ColumnedTreeViewProps<
 export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   props: ColumnedTreeViewProps<Data>
 ) => {
-  const { columns, columnWidth: firstColumnWidth = 100 } = props;
+  const { columns, columnWidth: firstColumnWidth = 100, outerDivStyle } = props;
   const columnsEntries = Object.entries(columns);
-  const columnKeys = [
-    FIRST_COLUMN_KEY,
-    ...columnsEntries.map(([key]) => key),
-  ];
+  const columnKeys = [FIRST_COLUMN_KEY, ...columnsEntries.map(([key]) => key)];
 
   const [columnWidths, setColumnWidths] = useState(() =>
     Object.fromEntries<number>([
@@ -34,6 +31,10 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   const [grabbedColumn, setGrabbedColumn] = useState<string | null>(null);
   const pointerXRef = useRef(0);
   const treeViewRef = useRef<VirtualScrollRef>(null);
+  const tableWidth = columnKeys.reduce(
+    (sum, key) => sum + columnWidths[key],
+    0
+  );
 
   const renderResizeHandle = (columnKey: string) => (
     <div
@@ -49,7 +50,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
         pointerXRef.current = event.clientX;
         setColumnWidths((widths) => ({
           ...widths,
-          [columnKey]: Math.max(0, widths[columnKey] + offset),
+          [columnKey]: Math.max(20, widths[columnKey] + offset),
         }));
       }}
       onPointerUp={() => setGrabbedColumn(null)}
@@ -57,8 +58,8 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
       style={{
         position: "absolute",
         top: 0,
-        right: -4,
-        width: 8,
+        right: -8,
+        width: 16,
         height: "100%",
         cursor: "col-resize",
         touchAction: "none",
@@ -89,12 +90,31 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
           }}
         />
       )}
-      <div style={{ display: "flex" }}>
+      {Object.keys(columnWidths)
+        .slice(0, -1)
+        .map((key) => (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: columnKeys
+                .slice(0, columnKeys.indexOf(key) + 1)
+                .reduce((sum, key) => sum + columnWidths[key], 0),
+              width: 1,
+              background: "black",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          />
+        ))}
+      <div style={{ display: "flex", minWidth: tableWidth }}>
         <div
           style={{
             width: columnWidths[FIRST_COLUMN_KEY],
             flexShrink: 0,
-            border: "1px solid black",
+            borderTop: "1px solid black",
+            borderLeft: "1px solid black",
             position: "relative",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -108,7 +128,12 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
           <div
             key={key}
             style={{
-              border: "1px solid black",
+              borderTop: "1px solid black",
+              borderLeft: "1px solid black",
+              borderRight:
+                index == Object.keys(columns).length - 1
+                  ? "1px solid black"
+                  : "",
               height: "100%",
               position: "relative",
               minWidth: 0,
@@ -131,13 +156,17 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
       <TreeView
         {...props}
         ref={treeViewRef}
+        outerDivStyle={{
+          border: "1px solid black",
+          ...props.outerDivStyle,
+          minWidth: tableWidth,
+        }}
         columnWidth={columnWidths[FIRST_COLUMN_KEY]}
         renderRowContentToTheRight={(node) => {
           return columnsEntries.map(([key, val], index) => (
             <div
               key={key}
               style={{
-                borderLeft: "1px solid black",
                 height: "100%",
                 minWidth: 0,
                 overflow: "hidden",

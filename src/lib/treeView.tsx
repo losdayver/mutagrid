@@ -20,10 +20,11 @@ interface TreeViewNode<Data> {
 }
 
 export interface TreeViewProps<Data> {
-  ref?: Ref<VirtualScrollRef>;
-  forest: TreeViewNode<Data>[];
   renderRowTitle: (node: TreeViewNode<Data>) => ReactNode;
   renderRowContentToTheRight?: (node: TreeViewNode<Data>) => ReactNode;
+  renderIcon?: (node: TreeViewNode<Data>) => ReactNode;
+  ref?: Ref<VirtualScrollRef>;
+  forest: TreeViewNode<Data>[];
   outerDivStyle?: CSSProperties;
   rowStyle?: CSSProperties;
   rowHeight?: number;
@@ -31,7 +32,6 @@ export interface TreeViewProps<Data> {
   leftItemPad?: number;
   columnWidth?: number;
   barsColor?: string;
-  renderIcon?: (node: TreeViewNode<Data>) => ReactNode;
 }
 
 const walkForest = <Data,>(
