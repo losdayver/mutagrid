@@ -1,6 +1,6 @@
 import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
-import { TreeView, TreeViewProps } from "./treeView";
-import { VirtualScrollRef } from "./virtualScroll";
+import { TreeView, TreeViewProps } from "./treeView.js";
+import { VirtualScrollRef } from "./virtualScroll.js";
 
 export interface ColumnedTreeViewColumn {
   title: string;

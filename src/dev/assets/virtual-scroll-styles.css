@@ -17,10 +17,7 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow: auto;
-  background:
-    radial-gradient(circle at 15% 10%, rgb(85 77 255 / 24%), transparent 34rem),
-    radial-gradient(circle at 88% 15%, rgb(0 214 201 / 16%), transparent 30rem),
-    linear-gradient(145deg, #050713 0%, #090d20 48%, #070a16 100%);
+  background: white;
 }
 
 body::before {

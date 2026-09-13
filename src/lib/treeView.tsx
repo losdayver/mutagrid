@@ -12,7 +12,7 @@ import {
   VirtualScroll,
   VirtualScrollProps,
   VirtualScrollRef,
-} from "./virtualScroll";
+} from "./virtualScroll.js";
 
 export interface TreeViewNode<Data> {
   data: Data;

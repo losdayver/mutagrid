@@ -1,23 +1,62 @@
 {
   "name": "mutagrid",
   "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch-dev": "npx vite"
+  "description": "React components for virtualized trees and resizable columned tree views",
+  "keywords": [
+    "data-grid",
+    "react",
+    "tree-view",
+    "typescript",
+    "virtual-scroll"
+  ],
+  "homepage": "https://github.com/losdayver/mutagrid#readme",
+  "bugs": {
+    "url": "https://github.com/losdayver/mutagrid/issues"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/losdayver/mutagrid.git"
+  },
   "license": "ISC",
+  "author": "losdayver",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/lib/exports.js",
+  "types": "./dist/types/exports.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/exports.d.ts",
+      "import": "./dist/lib/exports.js",
+      "default": "./dist/lib/exports.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build",
+    "watch-dev": "vite",
+    "prepack": "npm run check",
+    "pack:dry-run": "npm pack --dry-run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
+    "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "typescript": "6.0.3",
     "vite": "^8.3.0"
   },
-  "dependencies": {
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+  "peerDependencies": {
+    "react": ">=19.0.0 <20.0.0",
+    "react-dom": ">=19.0.0 <20.0.0"
   }
 }
