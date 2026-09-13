@@ -4,6 +4,8 @@ type PreviewForest = TreeViewProps<{
   title: string;
   dateCreated: Date;
   randomText: string;
+  size: string;
+  owner: string;
 }>["forest"];
 type PreviewNode = PreviewForest[number];
 type PreviewFolder = PreviewNode & {
@@ -22,6 +24,8 @@ type Random = () => number;
 const TOTAL_NODES = 530;
 const ROOT_NODES = 12;
 const MAX_DEPTH = 7;
+
+const owners = ["Ada", "Grace", "Ken", "Linus"] as const;
 
 const adjectives = [
   "atomic",
@@ -113,6 +117,8 @@ const createFolder = (
     title: `${pick(adjectives, random)}-${pick(nouns, random)}-${id}`,
     dateCreated: "" as any,
     randomText: `${pick(adjectives, random)} ${pick(nouns, random)}`,
+    size: "—",
+    owner: "system",
   },
   isFolder: true,
   expanded: depth === 0 || random() > Math.min(0.3 + depth * 0.08, 0.8),
@@ -125,6 +131,8 @@ const createFile = (id: number, random: Random): PreviewNode => ({
     title: `${pick(fileStems, random)}-${id}.${pick(extensions, random)}`,
     dateCreated: new Date(),
     randomText: `${pick(adjectives, random)} ${pick(nouns, random)}`,
+    size: `${(id * 17) % 900 + 1} KB`,
+    owner: owners[id % owners.length],
   },
   checked: random() < 0.12,
 });

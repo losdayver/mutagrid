@@ -13,7 +13,7 @@ import {
   VirtualScrollRef,
 } from "./virtualScroll";
 
-interface TreeViewNode<Data> {
+export interface TreeViewNode<Data> {
   data: Data;
   isFolder?: boolean;
   checked?: boolean;
@@ -23,7 +23,7 @@ interface TreeViewNode<Data> {
 }
 
 export interface TreeViewProps<Data> {
-  renderRowTitle: (node: TreeViewNode<Data>) => ReactNode;
+  renderRowTitle: (node: TreeViewNode<Data>) => string;
   renderRowContentToTheRight?: (node: TreeViewNode<Data>) => ReactNode;
   renderIcon?: (node: TreeViewNode<Data>) => ReactNode;
   ref?: Ref<VirtualScrollRef>;
@@ -49,7 +49,7 @@ export interface TreeViewProps<Data> {
   /** Styles the immediate wrapper around the rendered row title. */
   titleContentStyle?: CSSProperties;
   leftPadStep?: number;
-  leftItemPad?: number;
+  horizontalBarLength?: number;
   columnWidth?: number;
   barsColor?: string;
 }
@@ -99,20 +99,10 @@ export const TreeView = <Data,>({
   titleContainerStyle,
   titleContentStyle,
   columnWidth,
+  renderIcon,
   leftPadStep = 25,
-  leftItemPad = -10,
+  horizontalBarLength = 10,
   barsColor = "#0000003a",
-  renderIcon = (node) =>
-    !!(node.children?.length || node.isFolder) ? (
-      <div
-        className="lsdvr-mutagrid-tree-view-default-icon"
-        style={{ paddingLeft: 2 }}
-      >
-        {node.expanded ? "📂" : "📁"}
-      </div>
-    ) : (
-      "📄"
-    ),
 }: TreeViewProps<Data>) => {
   const sourceForestRef = useRef(forest);
   const forestShallowCopyRef = useRef<TreeViewNode<Data>[]>(
@@ -206,7 +196,7 @@ export const TreeView = <Data,>({
                             left: 0,
                             position: "absolute",
                             height: "100%",
-                            width: leftPadStep + leftItemPad,
+                            width: horizontalBarLength,
                             display: "flex",
                             flexDirection: "column",
                             justifyContent: "end",
@@ -236,7 +226,13 @@ export const TreeView = <Data,>({
                   ...iconContainerStyle,
                 }}
               >
-                {renderIcon(node)}
+                {renderIcon
+                  ? renderIcon(node)
+                  : !!(node.children?.length || node.isFolder)
+                    ? node.expanded
+                      ? "📂"
+                      : "📁"
+                    : "📄"}
               </div>
               <div
                 className="lsdvr-mutagrid-tree-view-title"
@@ -253,7 +249,17 @@ export const TreeView = <Data,>({
                   className="lsdvr-mutagrid-tree-view-title-content"
                   style={titleContentStyle}
                 >
-                  {renderRowTitle(node)}
+                  <div
+                    className={`lsdvr-mutagrid-tree-view-title-content-nodename ${node.isFolder ? "lsdvr-mutagrid-tree-view-title-content-nodename-folder" : "lsdvr-mutagrid-tree-view-title-content-nodename-node"}`}
+                    style={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {renderRowTitle(node)}
+                  </div>
                 </div>
               </div>
             </div>

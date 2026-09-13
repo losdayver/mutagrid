@@ -1,21 +1,22 @@
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
 import { TreeView, TreeViewProps } from "./treeView";
 import { VirtualScrollRef } from "./virtualScroll";
 
-const FIRST_COLUMN_KEY = "$firstColumn$";
+export interface ColumnedTreeViewColumn {
+  title: string;
+  width: number;
+  render?: (value: unknown) => ReactNode;
+  /** Styles this column's header cell after the shared header cell style. */
+  headerCellStyle?: CSSProperties;
+  /** Styles this column's body cells after the shared data cell style. */
+  dataCellStyle?: CSSProperties;
+}
 
 export interface ColumnedTreeViewProps<
   Data extends Record<string, unknown>,
 > extends TreeViewProps<Data> {
   columns: Partial<{
-    [Key in keyof Data]: {
-      title: string;
-      width: number;
-      /** Styles this column's header cell after the shared header cell style. */
-      headerCellStyle?: CSSProperties;
-      /** Styles this column's body cells after the shared data cell style. */
-      dataCellStyle?: CSSProperties;
-    };
+    [Key in keyof Data]: ColumnedTreeViewColumn;
   }>;
   /** Styles the root wrapper containing the header and TreeView. */
   columnedTreeViewStyle?: CSSProperties;
@@ -35,9 +36,24 @@ export interface ColumnedTreeViewProps<
   columnDividerStyle?: CSSProperties;
 }
 
+const safelyRenderText = (
+  value: string | number | Date | boolean | null | undefined
+): string | number => {
+  if (value === undefined) return "";
+  if (typeof value == "object" && !(value instanceof Date)) return "";
+  if (typeof value == "string") return value;
+  if (typeof value == "number") return value;
+  if (typeof value == "boolean") return value ? "true" : "false";
+  if (value instanceof Date)
+    return `${value.toLocaleDateString()} ${value.toLocaleTimeString()}`;
+  return "";
+};
+
 export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   props: ColumnedTreeViewProps<Data>
 ) => {
+  const FIRST_COLUMN_KEY = "$firstColumn$";
+  const MIN_COLUMN_WIDTH = 20;
   const {
     columns,
     columnWidth: firstColumnWidth = 100,
@@ -62,6 +78,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   );
   const [grabbedColumn, setGrabbedColumn] = useState<string | null>(null);
   const pointerXRef = useRef(0);
+  const minColumnWidthRef = useRef(MIN_COLUMN_WIDTH);
   const treeViewRef = useRef<VirtualScrollRef>(null);
   const tableWidth = columnKeys.reduce(
     (sum, key) => sum + columnWidths[key],
@@ -76,6 +93,19 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
       onPointerDown={(event) => {
         event.currentTarget.setPointerCapture(event.pointerId);
         pointerXRef.current = event.clientX;
+        const headerCell = event.currentTarget
+          .closest(".lsdvr-mutagrid-columned-tree-view")
+          ?.querySelectorAll<HTMLElement>(
+            ".lsdvr-mutagrid-columned-tree-view-header-cell"
+          )[columnKeys.indexOf(columnKey)];
+        const style = headerCell ? getComputedStyle(headerCell) : null;
+        const frameWidth = style
+          ? parseFloat(style.paddingLeft) +
+            parseFloat(style.paddingRight) +
+            parseFloat(style.borderLeftWidth) +
+            parseFloat(style.borderRightWidth)
+          : 0;
+        minColumnWidthRef.current = Math.max(MIN_COLUMN_WIDTH, frameWidth);
         setGrabbedColumn(columnKey);
       }}
       onPointerMove={(event) => {
@@ -84,7 +114,10 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
         pointerXRef.current = event.clientX;
         setColumnWidths((widths) => ({
           ...widths,
-          [columnKey]: Math.max(20, widths[columnKey] + offset),
+          [columnKey]: Math.max(
+            minColumnWidthRef.current,
+            widths[columnKey] + offset
+          ),
         }));
       }}
       onPointerUp={() => setGrabbedColumn(null)}
@@ -111,7 +144,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   return (
     <div
       className="lsdvr-mutagrid-columned-tree-view"
-      style={{ position: "relative", ...columnedTreeViewStyle }}
+      style={{ minWidth: tableWidth, ...columnedTreeViewStyle }}
     >
       {grabbedColumn != null && (
         <div
@@ -141,8 +174,7 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
             key={key}
             style={{
               position: "absolute",
-              top: 0,
-              bottom: 0,
+              height: "100%",
               left: columnKeys
                 .slice(0, columnKeys.indexOf(key) + 1)
                 .reduce((sum, key) => sum + columnWidths[key], 0),
@@ -185,7 +217,6 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
             key={key}
             style={{
               borderTop: "1px solid black",
-              borderLeft: "1px solid black",
               borderRight:
                 index == Object.keys(columns).length - 1
                   ? "1px solid black"
@@ -244,7 +275,9 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
                 ...val?.dataCellStyle,
               }}
             >
-              {JSON.stringify(node.data[key]) as any}
+              {val?.render
+                ? val?.render(node)
+                : safelyRenderText(node.data[key] as any)}
             </div>
           ));
         }}

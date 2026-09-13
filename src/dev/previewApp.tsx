@@ -1,73 +1,43 @@
-import { useRef, useState } from "react";
-import { VirtualScroll, VirtualScrollRef } from "../lib/virtualScroll";
-import { TreeView } from "../lib/treeView";
 import { ColumnedTreeView } from "../lib/columnedTreeView";
 import { previewForest } from "./previewForest";
+import fileSvgUrl from "./assets/File.svg?url";
+import folderClosedUrl from "./assets/Folder closed.svg";
+import folderOpenUrl from "./assets/Folder open.svg";
 
 export const PreviewApp = () => {
-  const [checked, setChecked] = useState<Record<number, boolean>>({});
-  const virtualScrollRef = useRef<VirtualScrollRef>(null);
-
   return (
-    <>
-      {/* <div style={{ height: "30vh" }}>
-        <VirtualScroll
-          ref={virtualScrollRef}
-          renderRow={(index) => (
-            <span>
-              <input
-                type="checkbox"
-                onChange={(e) => {
-                  setChecked((checked) => ({
-                    ...checked,
-                    [index]: !!e.target.checked,
-                  }));
-                  virtualScrollRef.current?.updateVisible();
-                }}
-                checked={!!checked[index]}
-              />
-              Hello world! {index}
-            </span>
-          )}
-          rowsNum={200}
-          outerDivStyle={{ height: "100%" }}
-        ></VirtualScroll>
-      </div> */}
-      <div style={{ height: "100%" }}>
-        <ColumnedTreeView<{
-          dateCreated: Date;
-          title: string;
-          randomText: string;
-        }>
-          forest={previewForest}
-          renderRowTitle={(node) => (
-            <div
-              style={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                color: node.isFolder ? "#d8ddff" : "#f7f8ff",
-              }}
-            >
-              {node.data.title}
-            </div>
-          )}
-          renderRowContentToTheRight={(node) => (
-            <div style={{ borderLeft: "1px solid black" }}></div>
-          )}
-          virtualScrollProps={{
-            outerDivStyle: { height: 600 },
-            rowHeight: 30,
-          }}
-          leftPadStep={30}
-          columnWidth={400}
-          columns={{
-            dateCreated: { title: "Created at", width: 200 },
-            randomText: { title: "Random text", width: 200 },
-          }}
-        ></ColumnedTreeView>
-      </div>
-    </>
+    <div style={{ height: "100%" }}>
+      <ColumnedTreeView<{
+        dateCreated: Date;
+        title: string;
+        randomText: string;
+        size: string;
+        owner: string;
+      }>
+        leftPadStep={30}
+        columnWidth={400}
+        horizontalBarLength={5}
+        forest={previewForest}
+        renderRowTitle={(node) => node.data.title}
+        virtualScrollProps={{ outerDivStyle: { height: 600 } }}
+        columns={{
+          dateCreated: { title: "Created at", width: 200 },
+          size: { title: "Size", width: 120 },
+          owner: { title: "Owner", width: 140 },
+          randomText: { title: "Random text", width: 200 },
+        }}
+        renderIcon={(node) =>
+          node.isFolder ? (
+            node.expanded ? (
+              <img src={folderOpenUrl} alt="" width={20} height={20} />
+            ) : (
+              <img src={folderClosedUrl} alt="" width={20} height={20} />
+            )
+          ) : (
+            <img src={fileSvgUrl} alt="" width={20} height={20} />
+          )
+        }
+      ></ColumnedTreeView>
+    </div>
   );
 };
