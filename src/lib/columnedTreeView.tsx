@@ -1,6 +1,14 @@
-import { CSSProperties, ReactNode, useEffect, useRef, useState } from "react";
-import { TreeView, TreeViewProps } from "./treeView.js";
-import { VirtualScrollRef } from "./virtualScroll.js";
+import {
+  CSSProperties,
+  ReactNode,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import { TreeView, TreeViewProps, TreeViewRef } from "./treeView.js";
+
+type StringKeyOf<Data> = Extract<keyof Data, string>;
 
 export interface ColumnedTreeViewColumn {
   title: string;
@@ -13,10 +21,10 @@ export interface ColumnedTreeViewColumn {
 }
 
 export interface ColumnedTreeViewProps<
-  Data extends Record<string, unknown>,
+  Data extends object,
 > extends TreeViewProps<Data> {
   columns: Partial<{
-    [Key in keyof Data]: ColumnedTreeViewColumn;
+    [Key in StringKeyOf<Data>]: ColumnedTreeViewColumn;
   }>;
   firstColumnTitle?: string;
   /** Styles the root wrapper containing the header and TreeView. */
@@ -37,11 +45,7 @@ export interface ColumnedTreeViewProps<
   columnDividerStyle?: CSSProperties;
 }
 
-const safelyRenderText = (
-  value: string | number | Date | boolean | null | undefined
-): string | number => {
-  if (value === undefined) return "";
-  if (typeof value == "object" && !(value instanceof Date)) return "";
+const safelyRenderText = (value: unknown): string | number => {
   if (typeof value == "string") return value;
   if (typeof value == "number") return value;
   if (typeof value == "boolean") return value ? "true" : "false";
@@ -50,13 +54,14 @@ const safelyRenderText = (
   return "";
 };
 
-export const ColumnedTreeView = <Data extends Record<string, unknown>>(
+export const ColumnedTreeView = <Data extends object,>(
   props: ColumnedTreeViewProps<Data>
 ) => {
   const FIRST_COLUMN_KEY = "$firstColumn$";
   const MIN_COLUMN_WIDTH = 20;
   const {
     columns,
+    ref,
     columnWidth: firstColumnWidth = 100,
     virtualScrollProps,
     columnedTreeViewStyle,
@@ -69,7 +74,10 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
     columnDividerStyle,
     firstColumnTitle = "File",
   } = props;
-  const columnsEntries = Object.entries(columns);
+  const columnsEntries = Object.entries(columns).filter(
+    (entry): entry is [StringKeyOf<Data>, ColumnedTreeViewColumn] =>
+      entry[1] !== undefined
+  );
   const columnKeys = [FIRST_COLUMN_KEY, ...columnsEntries.map(([key]) => key)];
 
   const [columnWidths, setColumnWidths] = useState(() =>
@@ -81,7 +89,13 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
   const [grabbedColumn, setGrabbedColumn] = useState<string | null>(null);
   const pointerXRef = useRef(0);
   const minColumnWidthRef = useRef(MIN_COLUMN_WIDTH);
-  const treeViewRef = useRef<VirtualScrollRef>(null);
+  const treeViewRef = useRef<TreeViewRef<Data>>(null);
+
+  useImperativeHandle(ref, () => ({
+    updateVisible: () => treeViewRef.current?.updateVisible(),
+    getSelectedNode: () => treeViewRef.current?.getSelectedNode() ?? null,
+  }));
+
   const tableWidth = columnKeys.reduce(
     (sum, key) => sum + columnWidths[key],
     0
@@ -281,9 +295,9 @@ export const ColumnedTreeView = <Data extends Record<string, unknown>>(
                 ...val?.dataCellStyle,
               }}
             >
-              {val?.render
-                ? val?.render(node)
-                : safelyRenderText(node.data[key] as any)}
+              {val.render
+                ? val.render(node.data[key])
+                : safelyRenderText(node.data[key])}
             </div>
           ));
         }}

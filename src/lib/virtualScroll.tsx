@@ -155,7 +155,7 @@ export const VirtualScroll = forwardRef<VirtualScrollRef, VirtualScrollProps>(
             ...viewportStyle,
           }}
           onScroll={(e) => {
-            const value = (e.target as any).scrollTop;
+            const value = e.currentTarget.scrollTop;
             setScrollTop(value);
             generateRows(value);
           }}

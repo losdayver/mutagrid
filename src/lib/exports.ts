@@ -5,7 +5,7 @@ export type {
 } from "./columnedTreeView.js";
 
 export { TreeView } from "./treeView.js";
-export type { TreeViewNode, TreeViewProps } from "./treeView.js";
+export type { TreeViewNode, TreeViewProps, TreeViewRef } from "./treeView.js";
 
 export { VirtualScroll } from "./virtualScroll.js";
 export type { VirtualScrollProps, VirtualScrollRef } from "./virtualScroll.js";

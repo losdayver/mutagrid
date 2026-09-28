@@ -1,19 +1,18 @@
 import { ColumnedTreeView } from "../lib/columnedTreeView";
-import { previewForest } from "./previewForest";
+import { previewForest, type PreviewTreeNodeType } from "./previewForest";
 import fileSvgUrl from "./assets/File.svg?url";
 import folderClosedUrl from "./assets/Folder closed.svg";
 import folderOpenUrl from "./assets/Folder open.svg";
+import { useRef } from "react";
+import type { TreeViewRef } from "../lib/treeView";
 
 export const PreviewApp = () => {
+  const ref = useRef<TreeViewRef<PreviewTreeNodeType>>(null);
+
   return (
     <div style={{ height: "100%" }}>
-      <ColumnedTreeView<{
-        dateCreated: Date;
-        title: string;
-        randomText: string;
-        size: string;
-        owner: string;
-      }>
+      <ColumnedTreeView<PreviewTreeNodeType>
+        ref={ref}
         leftPadStep={30}
         columnWidth={400}
         horizontalBarLength={5}
@@ -23,6 +22,12 @@ export const PreviewApp = () => {
         onClick={(node, event) => {
           if (event.button === 2) event.preventDefault();
           console.log(node.data.title);
+        }}
+        onSelect={(node) => {
+          console.log(`got selected node: ${JSON.stringify(node.data)}`);
+          console.log(
+            `got node from ref: ${JSON.stringify(ref.current?.getSelectedNode()?.data)}`
+          );
         }}
         columns={{
           dateCreated: { title: "Created at", width: 200 },

@@ -23,6 +23,10 @@ export interface TreeViewNode<Data> {
   level?: number;
 }
 
+export interface TreeViewRef<Data> extends VirtualScrollRef {
+  getSelectedNode: () => TreeViewNode<Data> | null;
+}
+
 export interface TreeViewProps<Data> {
   renderRowTitle: (node: TreeViewNode<Data>) => string;
   renderRowContentToTheRight?: (node: TreeViewNode<Data>) => ReactNode;
@@ -33,7 +37,7 @@ export interface TreeViewProps<Data> {
     event: MouseEvent<HTMLDivElement>
   ) => void;
   onSelect?: (node: TreeViewNode<Data>) => void;
-  ref?: Ref<VirtualScrollRef>;
+  ref?: Ref<TreeViewRef<Data>>;
   forest: TreeViewNode<Data>[];
   /** Configures and styles the VirtualScroll owned by this TreeView. */
   virtualScrollProps?: Omit<VirtualScrollProps, "renderRow" | "rowsNum">;
@@ -123,9 +127,11 @@ export const TreeView = <Data,>({
   const [selectedNode, setSelectedNode] = useState<TreeViewNode<Data> | null>(
     null
   );
+  const selectedNodeRef = useRef<TreeViewNode<Data> | null>(null);
 
   useImperativeHandle(ref, () => ({
     updateVisible: () => virtualScrollRef.current?.updateVisible(),
+    getSelectedNode: () => selectedNodeRef.current,
   }));
 
   const flatTree = makeFlatTree(forestShallowCopyRef.current);
@@ -148,6 +154,7 @@ export const TreeView = <Data,>({
         const node = flatTree[rowIndex];
         onClick?.(node, event);
         if (node && node != selectedNode) {
+          selectedNodeRef.current = node;
           setSelectedNode(node);
           onSelect?.(node);
         }

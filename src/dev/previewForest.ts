@@ -1,12 +1,14 @@
 import type { TreeViewProps } from "../lib/treeView";
 
-type PreviewForest = TreeViewProps<{
+export interface PreviewTreeNodeType {
   title: string;
-  dateCreated: Date;
+  dateCreated: Date | null;
   randomText: string;
   size: string;
   owner: string;
-}>["forest"];
+}
+
+type PreviewForest = TreeViewProps<PreviewTreeNodeType>["forest"];
 type PreviewNode = PreviewForest[number];
 type PreviewFolder = PreviewNode & {
   isFolder: true;
@@ -115,7 +117,7 @@ const createFolder = (
 ): PreviewFolder => ({
   data: {
     title: `${pick(adjectives, random)}-${pick(nouns, random)}-${id}`,
-    dateCreated: "" as any,
+    dateCreated: null,
     randomText: `${pick(adjectives, random)} ${pick(nouns, random)}`,
     size: "—",
     owner: "system",
