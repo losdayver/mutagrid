@@ -43,6 +43,8 @@ export interface TreeViewProps<Data> {
   virtualScrollProps?: Omit<VirtualScrollProps, "renderRow" | "rowsNum">;
   /** Styles the flex container rendered inside each virtual row. */
   treeRowStyle?: CSSProperties;
+  /** Styles the selected tree row after the shared tree row style. */
+  selectedTreeRowStyle?: CSSProperties;
   /** Styles the tree column containing indentation, icon, and title. */
   treeColumnStyle?: CSSProperties;
   /** Styles the container that groups all indentation levels. */
@@ -103,6 +105,7 @@ export const TreeView = <Data,>({
   onSelect,
   virtualScrollProps,
   treeRowStyle,
+  selectedTreeRowStyle,
   treeColumnStyle,
   indentationContainerStyle,
   indentationLevelStyle,
@@ -166,7 +169,12 @@ export const TreeView = <Data,>({
         return (
           <div
             className={`lsdvr-mutagrid-tree-view-row ${selectedNode == node ? "lsdvr-mutagrid-tree-view-row-selected" : ""}`}
-            style={{ display: "flex", height: "100%", ...treeRowStyle }}
+            style={{
+              display: "flex",
+              height: "100%",
+              ...treeRowStyle,
+              ...(selectedNode == node ? selectedTreeRowStyle : undefined),
+            }}
           >
             <div
               className="lsdvr-mutagrid-tree-view-tree-column"
