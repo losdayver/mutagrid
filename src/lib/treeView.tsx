@@ -23,6 +23,10 @@ export interface TreeViewNode<Data> {
   level?: number;
 }
 
+export interface TreeViewRef<Data> extends VirtualScrollRef {
+  getSelectedNode: () => TreeViewNode<Data> | null;
+}
+
 export interface TreeViewProps<Data> {
   renderRowTitle: (node: TreeViewNode<Data>) => string;
   renderRowContentToTheRight?: (node: TreeViewNode<Data>) => ReactNode;
@@ -32,12 +36,15 @@ export interface TreeViewProps<Data> {
     node: TreeViewNode<Data>,
     event: MouseEvent<HTMLDivElement>
   ) => void;
-  ref?: Ref<VirtualScrollRef>;
+  onSelect?: (node: TreeViewNode<Data>) => void;
+  ref?: Ref<TreeViewRef<Data>>;
   forest: TreeViewNode<Data>[];
   /** Configures and styles the VirtualScroll owned by this TreeView. */
   virtualScrollProps?: Omit<VirtualScrollProps, "renderRow" | "rowsNum">;
   /** Styles the flex container rendered inside each virtual row. */
   treeRowStyle?: CSSProperties;
+  /** Styles the selected tree row after the shared tree row style. */
+  selectedTreeRowStyle?: CSSProperties;
   /** Styles the tree column containing indentation, icon, and title. */
   treeColumnStyle?: CSSProperties;
   /** Styles the container that groups all indentation levels. */
@@ -95,8 +102,10 @@ export const TreeView = <Data,>({
   renderRowTitle,
   renderRowContentToTheRight,
   onClick,
+  onSelect,
   virtualScrollProps,
   treeRowStyle,
+  selectedTreeRowStyle,
   treeColumnStyle,
   indentationContainerStyle,
   indentationLevelStyle,
@@ -116,10 +125,16 @@ export const TreeView = <Data,>({
     shallowCopyForest(forest)
   );
   const virtualScrollRef = useRef<VirtualScrollRef>(null);
+
   const [_, setRefreshVersion] = useState(0);
+  const [selectedNode, setSelectedNode] = useState<TreeViewNode<Data> | null>(
+    null
+  );
+  const selectedNodeRef = useRef<TreeViewNode<Data> | null>(null);
 
   useImperativeHandle(ref, () => ({
     updateVisible: () => virtualScrollRef.current?.updateVisible(),
+    getSelectedNode: () => selectedNodeRef.current,
   }));
 
   const flatTree = makeFlatTree(forestShallowCopyRef.current);
@@ -139,7 +154,13 @@ export const TreeView = <Data,>({
       rowsNum={flatTree?.length}
       onClick={(rowIndex, event) => {
         virtualScrollProps?.onClick?.(rowIndex, event);
-        onClick?.(flatTree[rowIndex], event);
+        const node = flatTree[rowIndex];
+        onClick?.(node, event);
+        if (node && node != selectedNode) {
+          selectedNodeRef.current = node;
+          setSelectedNode(node);
+          onSelect?.(node);
+        }
       }}
       renderRow={(rowIndex) => {
         const node = flatTree?.[rowIndex];
@@ -147,8 +168,13 @@ export const TreeView = <Data,>({
 
         return (
           <div
-            className="lsdvr-mutagrid-tree-view-row"
-            style={{ display: "flex", height: "100%", ...treeRowStyle }}
+            className={`lsdvr-mutagrid-tree-view-row ${selectedNode == node ? "lsdvr-mutagrid-tree-view-row-selected" : ""}`}
+            style={{
+              display: "flex",
+              height: "100%",
+              ...treeRowStyle,
+              ...(selectedNode == node ? selectedTreeRowStyle : undefined),
+            }}
           >
             <div
               className="lsdvr-mutagrid-tree-view-tree-column"
@@ -160,13 +186,6 @@ export const TreeView = <Data,>({
                 width: columnWidth ?? "100%",
                 flexShrink: 0,
                 ...treeColumnStyle,
-              }}
-              onClick={(event) => {
-                if (!node.isFolder) return;
-                event.stopPropagation();
-                node.expanded = !node.expanded;
-                setRefreshVersion((version) => version + 1);
-                virtualScrollRef.current?.updateVisible?.();
               }}
             >
               <div
@@ -237,6 +256,12 @@ export const TreeView = <Data,>({
                 style={{
                   marginLeft: leftPadStep / 2,
                   ...iconContainerStyle,
+                }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  node.expanded = !node.expanded;
+                  setRefreshVersion((version) => version + 1);
+                  virtualScrollRef.current?.updateVisible?.();
                 }}
               >
                 {renderIcon

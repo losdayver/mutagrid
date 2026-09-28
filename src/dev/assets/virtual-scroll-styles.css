@@ -251,6 +251,13 @@ body::before {
   font-size: 14px;
 }
 
+.lsdvr-mutagrid-tree-view-row-selected {
+  background:
+    linear-gradient(90deg, rgb(139 124 255 / 28%), rgb(23 216 196 / 10%)),
+    var(--mutagrid-surface-hover);
+  box-shadow: 3px 0 0 var(--mutagrid-primary) inset;
+}
+
 .lsdvr-mutagrid-tree-view-tree-column {
   align-items: center;
   color: var(--mutagrid-text);
