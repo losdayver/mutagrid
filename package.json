@@ -1,6 +1,6 @@
 {
   "name": "mutagrid",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "React components for virtualized trees and resizable columned tree views",
   "keywords": [
     "data-grid",
