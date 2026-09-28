@@ -22,9 +22,7 @@ export const PreviewApp = () => {
         forest={previewForest}
         onClick={(node, event) => {
           if (event.button === 2) event.preventDefault();
-          window.alert(
-            `${event.button === 2 ? "Right" : "Left"} click: ${node.data.title}`
-          );
+          console.log(node.data.title);
         }}
         columns={{
           dateCreated: { title: "Created at", width: 200 },
